@@ -5,10 +5,10 @@ DOBJ = zlanbpro.F zreorth.F zgetu0.F zsafescal.F dblasext.F zblasext.F \
        zlansvd_irl.F dbsvd.F zritzvec.F z$(MGS).F second.F
 
 all:
-	$(FC) -shared $(FFLAG) $(LDFLAGS) $(DOBJ) -o libzpropack.$(SLIB)
+	$(FC) -shared $(FFLAG) $(DOBJ) $(LDFLAGS) -o libzpropack.$(SLIB)
 
 debug:
-	$(FC) -shared -g $(FFLAG) $(LDFLAGS) $(DOBJ) -o libspropack.$(SLIB)
+	$(FC) -shared -g $(FFLAG) $(DOBJ) $(LDFLAGS) -o libspropack.$(SLIB)
 
 clean:
 	rm *.$(SLIB)

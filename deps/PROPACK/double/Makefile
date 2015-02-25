@@ -5,10 +5,10 @@ DOBJ = dlanbpro.F dreorth.F dgetu0.F dsafescal.F dblasext.F \
        dlansvd_irl.F dbsvd.F dritzvec.F d$(MGS).F second.F
 
 all:
-	$(FC) -shared $(FFLAG) $(LDFLAGS) $(DOBJ) -o libdpropack.$(SLIB)
+	$(FC) -shared $(FFLAG) $(DOBJ) $(LDFLAGS) -o libdpropack.$(SLIB)
 
 debug:
-	$(FC) -shared -g $(FFLAG) $(LDFLAGS) $(DOBJ) -o libspropack.$(SLIB)
+	$(FC) -shared -g $(FFLAG) $(DOBJ) $(LDFLAGS) -o libspropack.$(SLIB)
 
 clean:
 	rm *.$(SLIB)

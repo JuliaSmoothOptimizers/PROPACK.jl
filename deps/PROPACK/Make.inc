@@ -14,4 +14,4 @@ FC = gfortran
 FFLAG = -xf77-cpp-input
 BLAS = -lblas
 LAPACK = -llapack
-LDFLAGS = $(LAPACK) $(BLAS)
+LDFLAGS = -fPIC $(LAPACK) $(BLAS)
