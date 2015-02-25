@@ -34,7 +34,7 @@ c     %--------------------%
       external dlamch, matvecmult
 
 c-------------------- Here begins executable code ---------------------
-      
+
 c
 c     Get input parameters from stdin.
 c
@@ -42,7 +42,7 @@ c
      c     '(1=Harwell-Boeing, 2=dense ASCII, 3=dense binary,' //
      c     ' 4=coordinate ASCII, 5=coordinate binary, 6=diagonal' //
      c     'ASCII, 7=diagonal binary)?'
-      read (5,*) matform 
+      read (5,*) matform
       write(*,*) matform
       write (*,*) 'Name of matrix input file?'
       read (5,'(a)') matfilename
@@ -89,10 +89,10 @@ c
      c        nmax
          stop 'Matrix exceeded maximum size defined in matvec.h.'
       endif
-         
+
 c
 c     Set the first column of U to zero. This will make dlansvd_irl
-c     generate a random starting vector.      
+c     generate a random starting vector.
 c
       do i=1,m
          U(i,1) = 0d0
@@ -130,7 +130,7 @@ c
       do i=1,neig
          write(*,'(1I5,1p,1e25.15,1p,1e12.3)') i,Sigma(i),bnd(i)
          write(10,'(1I5,1p,1e25.15,1p,1e12.3)') i,Sigma(i),bnd(i)
-      enddo 
+      enddo
       close(10)
 
 c
@@ -143,7 +143,7 @@ c
          call writedense(vfilename,uvform+1,n,neig,V,nmax)
       endif
 c
-c     Print runtime statistics 
+c     Print runtime statistics
 c
       call printstat
       end

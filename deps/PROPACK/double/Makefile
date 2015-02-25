@@ -7,5 +7,8 @@ DOBJ = dlanbpro.F dreorth.F dgetu0.F dsafescal.F dblasext.F \
 all:
 	$(FC) -shared $(FFLAG) $(LDFLAGS) $(DOBJ) -o libdpropack.$(SLIB)
 
+debug:
+	$(FC) -shared -g $(FFLAG) $(LDFLAGS) $(DOBJ) -o libspropack.$(SLIB)
+
 clean:
 	rm *.$(SLIB)

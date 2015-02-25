@@ -16,13 +16,13 @@ c
       else if (matform.eq.6 .or. matform.eq.7) then
          call readdiag(filename,matform,m,n)
       endif
-      
+
       end
 
 
       subroutine matvecmult(transa,m,n,x,y,dparm,iparm)
       implicit none
-      
+
       character*1 transa
       integer m,n,iparm(*)
       double precision x(*),y(*),dparm(*)
@@ -34,14 +34,14 @@ c
          call densemv(transa,m,n,x,y,dparm,iparm)
       else if (matform.eq.4 .or. matform.eq.5) then
          call coordmv(transa,m,n,x,y,dparm,iparm)
-      else if (matform.eq.6 .or. matform.eq.7) then      
+      else if (matform.eq.6 .or. matform.eq.7) then
          call diagmv(transa,m,n,x,y,dparm,iparm)
       endif
       end
 
 ccccccccccccccccccccc Harwell-Boeing format cccccccccccccccccccccccccccc
 c Note: this is also known as compressed column storage (CCS) format.
- 
+
       subroutine readhb(filename,m,n)
       implicit none
 c
@@ -49,7 +49,7 @@ c     Read matrix in Harwell-Boeing format
 c
       include 'matvec.h'
       character*256 filename
-       
+
       integer lunit,m,n
       parameter(lunit=10)
       CHARACTER      TITLE*72 , KEY*8    , MXTYPE*3 , RHSTYP*3,
@@ -60,7 +60,7 @@ c
       logical lsame
       external lsame
 
-      
+
       open(lunit,file=filename,status='old')
 
 C    ------------------------
@@ -86,7 +86,7 @@ C     -------------------------
       if (ncol.gt.nmax) stop 'ERROR in readHB: ncol > nmax'
       if (nrow.gt.mmax) stop 'ERROR in readHB: nrow > mmax'
       if (nnzero.gt.nnzmax) stop 'ERROR in readHB: nnzero > nnzmax'
-      
+
 
       read ( lunit, ptrfmt ) ( colptr (i), i = 1, ncol+1 )
       read ( lunit, indfmt ) ( rowind (i), i = 1, nnzero )
@@ -120,7 +120,7 @@ c         ----------------------
       logical lsame
       external lsame
       include 'matvec.h'
-      
+
       if (lsame(transa,'n')) then
 c
 c     computes  y <- A*x
@@ -139,7 +139,7 @@ CDIR$ LOOP COUNT(10000)
               ylocal(i) = 0d0
            enddo
 CDIR$ LOOP COUNT(10000)
-c$OMP DO 
+c$OMP DO
            do i=1,n
               xi = x(i)
 cDIR$ IVDEP
@@ -192,8 +192,8 @@ CDIR$ IVDEP
 ccccccccccccccccccccc Coordinate format cccccccccccccccccccccccccccc
 c
 c     For the purpose of running PROPACK, it would often be faster first
-c     to convert coordinate format matrices into e.g. compressed column 
-c     storage format (also known as the Harwell-Boeing format) and 
+c     to convert coordinate format matrices into e.g. compressed column
+c     storage format (also known as the Harwell-Boeing format) and
 c     use that for computing matrix-vector multiplies, but we supply
 c     the following routines for educational purposes.
 c
@@ -232,11 +232,11 @@ c
       logical lsame
       external lsame
       include 'matvec.h'
-      
+
 #ifdef _OPENMP
       if (lsame(transa,'n')) then
 c$OMP PARALLEL private(ylocal,i,j,aij)
-c$OMP DO 
+c$OMP DO
          do i=1,m
             y(i) = 0d0
          enddo
@@ -244,7 +244,7 @@ c$OMP ENDDO NOWAIT
          do i=1,m
             ylocal(i) = 0d0
          enddo
-c$OMP DO 
+c$OMP DO
          do k=1,nnzero
             i = coordinate(k,1)
             j = coordinate(k,2)
@@ -259,7 +259,7 @@ c$OMP end critical
 c$OMP END PARALLEL
       else
 c$OMP PARALLEL private(ylocal,i,j,aij)
-c$OMP DO 
+c$OMP DO
          do i=1,m
             y(i) = 0d0
          enddo
@@ -267,7 +267,7 @@ c$OMP ENDDO NOWAIT
          do i=1,m
             ylocal(i) = 0d0
          enddo
-c$OMP DO 
+c$OMP DO
          do k=1,nnzero
             i = coordinate(k,1)
             j = coordinate(k,2)
@@ -309,7 +309,7 @@ c$OMP END PARALLEL
 
 ccccccccccccccccccccc dense format cccccccccccccccccccccccccccc
 c
-c     Note: We assume the matrix is always stored in major 
+c     Note: We assume the matrix is always stored in major
 c     column order.
 c
       subroutine readdense(filename, form, m, n, A, lda)
@@ -323,13 +323,13 @@ c
       if (form.eq.2) then
          open(lunit,file=filename,status='old')
          read(lunit,*) m,n
-         read(lunit,*) ((A(i,j),i=1,m),j=1,n) 
+         read(lunit,*) ((A(i,j),i=1,m),j=1,n)
       else if (form.eq.3) then
          open(lunit,file=filename,status='old',form='unformatted')
          read(lunit) m,n
-         read(lunit) ((A(i,j),i=1,m),j=1,n)         
+         read(lunit) ((A(i,j),i=1,m),j=1,n)
       endif
-      close(lunit)      
+      close(lunit)
       end
 
       subroutine writedense(filename, form, m, n, A, lda)
@@ -349,9 +349,9 @@ c
       else if (form.eq.3) then
          open(lunit,file=filename,status='unknown',form='unformatted')
          write(lunit) m,n
-         write(lunit) ((A(i,j),i=1,m),j=1,n)         
+         write(lunit) ((A(i,j),i=1,m),j=1,n)
       endif
-      close(lunit)      
+      close(lunit)
       end
 
 
@@ -361,7 +361,7 @@ c
       integer m,n,iparm(*)
       double precision x(*),y(*),dparm(*)
       include 'matvec.h'
-     
+
       call dgemv(transa,m,n,1d0,matrix,densemmax,x,1,0d0,y,1)
 
       end
@@ -384,7 +384,7 @@ ccccccccccccccccccccc diagonal format cccccccccccccccccccccccccccc
          read(lunit) m,n
          read(lunit) (values(i),i=1,min(m,n))
       endif
-      
+
       end
 
 
@@ -396,19 +396,19 @@ ccccccccccccccccccccc diagonal format cccccccccccccccccccccccccccc
       logical lsame
       external lsame
       include 'matvec.h'
-      
-c$OMP PARALLEL DO 
+
+c$OMP PARALLEL DO
       do i=1,min(m,n)
          y(i) = values(i)*x(i)
       enddo
       if (m.ne.n) then
          if (lsame(transa,'n')) then
-c$OMP PARALLEL DO 
+c$OMP PARALLEL DO
             do i=min(m,n)+1,m
                y(i) = 0d0
             enddo
          else
-c$OMP PARALLEL DO 
+c$OMP PARALLEL DO
             do i=min(m,n)+1,n
                y(i) = 0d0
             enddo
