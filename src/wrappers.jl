@@ -97,7 +97,7 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             bnd = Array($elty, k)
             V = Array($elty, n, kmax)
 
-            nb = 10 # BLAS-3 blocking size. Don't know the size
+            nb = 16 # BLAS-3 blocking size. Don't know the size. It's almost surely a power of 2.
             if jobu == 'N' && jobv == 'N'
                 lwork = Int32(m + n + 9kmax + 2kmax*kmax + 4 + max(m + n, 4kmax + 4))
                 liwork = Int32(2kmax + 1)
@@ -212,7 +212,7 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             bnd = Array($elty, k)
             V = Array($elty, n, kmax)
 
-            nb = 10 # BLAS-3 blocking size. Don't know the size
+            nb = 16 # BLAS-3 blocking size. Don't know the size. It's almost surely a power of 2.
             if jobu == 'N' && jobv == 'N'
                 lwork = Int32(m + n + 10kmax + 2kmax*kmax + 5 + max(m, max(n, 4kmax + 4)))
                 liwork = Int32(2kmax + 1)
