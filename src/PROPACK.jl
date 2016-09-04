@@ -61,4 +61,33 @@ function tsvdvals{T}(A::AbstractMatrix{T};
     return s, bnd
 end
 
+function tsvd_irl{T}(A::AbstractMatrix{T};
+                     smallest::Bool = true, initvec::Vector{T} = zeros(T, size(A, 1)),
+                     kmax::Integer = min(size(A)...)+10,
+                     p::Integer = 1, k::Integer = 1,
+                     maxiter::Integer = min(size(A)...), tolin::Real = sqrt(eps(real(one(T)))))
+
+    m, n = size(A)
+    global __mat__ = A
+    global mvp1s = 0
+    global mvp2s = 0
+    __pf__ = cfunction(__f__, Void, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
+
+    lansvd_irl(smallest ? 'S' : 'L', 'Y', 'Y', m, n, kmax, p, k, maxiter, __pf__, initvec, tolin)
+end
+function tsvdvals_irl{T}(A::AbstractMatrix{T};
+                         smallest::Bool = true, initvec::Vector{T} = zeros(T, size(A, 1)),
+                         kmax::Integer = min(size(A)...)+10,
+                         p::Integer = 1, k::Integer = 1,
+                         maxiter::Integer = min(size(A)...), tolin::Real = sqrt(eps(real(one(T)))))
+    m, n = size(A)
+    global __mat__ = A
+    global mvp1s = 0
+    global mvp2s = 0
+    __pf__ = cfunction(__f__, Void, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
+
+    _, s, _, bnd = lansvd_irl(smallest ? 'S' : 'L', 'N', 'N', m, n, kmax, p, k, maxiter, __pf__, initvec, tolin)
+    return s, bnd
+end
+
 end # module
