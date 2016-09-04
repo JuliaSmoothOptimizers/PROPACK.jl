@@ -95,7 +95,7 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             copy!(U, 1, initvec, 1, m)
             s = Array($elty, k)
             bnd = Array($elty, k)
-            V = Array($elty, m, kmax)
+            V = Array($elty, n, kmax)
 
             nb = 10 # BLAS-3 blocking size. Don't know the size
             if jobu == 'N' && jobv == 'N'
@@ -210,7 +210,7 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             copy!(U, 1, initvec, 1, m)
             s = Array($elty, k)
             bnd = Array($elty, k)
-            V = Array($elty, m, kmax)
+            V = Array($elty, n, kmax)
 
             nb = 10 # BLAS-3 blocking size. Don't know the size
             if jobu == 'N' && jobv == 'N'
