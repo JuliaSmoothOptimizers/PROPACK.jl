@@ -40,8 +40,8 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
         Returns: (U, s, V, bnd).
         """
         function lansvd!(jobu::Char, jobv::Char, m::Integer, n::Integer,
-            kmax::Integer, aprod, U::StridedMatrix{$elty}, s::Vector{$elty},
-            bnd::Vector{$elty}, V::StridedMatrix{$elty}, tolin::$elty,
+            kmax::Integer, aprod, U::Array{$elty,2}, s::Vector{$elty},
+            bnd::Vector{$elty}, V::Array{$elty,2}, tolin::$elty,
             work::Vector{$elty}, iwork::Vector{Int32}, doption::Vector{$elty},
             ioption::Vector{Int32}, dparm::Vector{$elty}, iparm::Vector{Int32})
 
@@ -167,9 +167,9 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
         Returns: (U, s, V, bnd).
         """
         function lansvd_irl!(which::Char, jobu::Char, jobv::Char, m::Integer,
-            n::Integer, dim::Integer, p::Integer, neig::Integer,
-            maxiter::Integer, aprod, U::StridedMatrix{$elty}, s::Vector{$elty},
-            bnd::Vector{$elty}, V::StridedMatrix{$elty}, tolin::$elty,
+            n::Integer, kmax::Integer, p::Integer,
+            maxiter::Integer, aprod, U::Array{$elty,2}, s::Vector{$elty},
+            bnd::Vector{$elty}, V::Array{$elty,2}, tolin::$elty,
             work::Vector{$elty}, iwork::Vector{Int32}, doption::Vector{$elty},
             ioption::Vector{Int32}, dparm::Vector{$elty}, iparm::Vector{Int32})
 
