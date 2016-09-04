@@ -33,7 +33,10 @@ function __f__(transa, mm, nn, x, y, dparm, iparm)
     nothing
 end
 
-function tsvd{T}(A::AbstractMatrix{T}; initvec::Vector{T} = zeros(T, size(A, 1)), k::Integer = 1, kmax::Integer = 1000, tolin::Real = sqrt(eps(real(one(T)))))
+function tsvd{T}(A::AbstractMatrix{T};
+                 initvec::Vector{T} = zeros(T, size(A, 1)), k::Integer = 1,
+                 kmax::Integer = min(size(A)...)+10,
+                 tolin::Real = sqrt(eps(real(one(T)))))
 
     m, n = size(A)
     global __mat__ = A
@@ -43,7 +46,10 @@ function tsvd{T}(A::AbstractMatrix{T}; initvec::Vector{T} = zeros(T, size(A, 1))
 
     lansvd('Y', 'Y', m, n, __pf__, initvec, k, kmax, tolin)
 end
-function tsvdvals{T}(A::AbstractMatrix{T}; initvec::Vector{T} = zeros(T, size(A, 1)), k::Integer = 1, kmax::Integer = 1000, tolin::Real = sqrt(eps(real(one(T)))))
+function tsvdvals{T}(A::AbstractMatrix{T};
+                     initvec::Vector{T} = zeros(T, size(A, 1)), k::Integer = 1,
+                     kmax::Integer = min(size(A)...)+10,
+                     tolin::Real = sqrt(eps(real(one(T)))))
 
     m, n = size(A)
     global __mat__ = A
@@ -51,7 +57,8 @@ function tsvdvals{T}(A::AbstractMatrix{T}; initvec::Vector{T} = zeros(T, size(A,
     global mvp2s = 0
     __pf__ = cfunction(__f__, Void, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
 
-    lansvd('N', 'N', m, n, __pf__, initvec, k, kmax, tolin)[[2,4]]
+    _, s, _, bnd = lansvd('N', 'N', m, n, __pf__, initvec, k, kmax, tolin)
+    return s, bnd
 end
 
 end # module
