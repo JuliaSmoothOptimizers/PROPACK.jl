@@ -108,8 +108,9 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             work = Array($elty, lwork)
             iwork = Array(Int32, liwork)
 
-            doption = $elty[sqrt(eps($elty)); eps($elty)^(3/4); 0.0; zeros(7)]
-            ioption = Int32[0; 1; zeros(8)]
+            ϵ = eps($elty)
+            doption = $elty[sqrt(ϵ/k); ϵ^(3/4)/sqrt(k); 0.0]  # propack will estimate ‖A‖
+            ioption = Int32[0; 1]
 
             dparm = $elty[0]
             iparm = Int32[0]
@@ -223,8 +224,9 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             work = Array($elty, lwork)
             iwork = Array(Int32, liwork)
 
-            doption = $elty[sqrt(eps($elty)); eps($elty)^(3/4); 0.0; zeros(7)]
-            ioption = Int32[0; 1; zeros(8)]
+            ϵ = eps($elty)
+            doption = $elty[sqrt(ϵ); ϵ^(3/4); 0.0; ϵ^(1/6)]
+            ioption = Int32[0; 1]
 
             dparm = $elty[0]
             iparm = Int32[0]
