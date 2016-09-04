@@ -69,9 +69,7 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
                 iwork, &length(iwork), doption, ioption,
                 info, dparm, iparm)
 
-            if info[1] != 0
-                error("info was $(info[1])")
-            end
+            info[1] == 0 || error("lansvd return code: $(info[1])")
 
             return U, s, V, bnd
         end
@@ -93,7 +91,6 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             initvec::Vector{$elty}, k::Integer, kmax::Integer, tolin::$elty)
 
             # Extract
-
             U = Array($elty, m, kmax + 1)
             copy!(U, 1, initvec, 1, m)
             s = Array($elty, k)
@@ -197,11 +194,7 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
                 iwork, &length(iwork), doption, ioption,
                 info, dparm, iparm)
 
-
-
-            if info[1] != 0
-                error("info was $(info[1])")
-            end
+            info[1] == 0 || error("lansvd_irl return code: $(info[1])")
 
             return U, s, V, bnd
         end
