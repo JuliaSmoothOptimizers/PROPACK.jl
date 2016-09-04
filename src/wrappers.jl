@@ -121,9 +121,9 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             dparm = $elty[0]
             iparm = Int32[0]
 
-            lansvd!(jobu, jobv, m, n, kmax, pff, U, s, bnd, V, tolin, work,
-                iwork, doption, ioption, dparm, iparm)
-
+            (U, s, V, bnd) = lansvd!(jobu, jobv, m, n, kmax, pff, U, s, bnd, V, tolin,
+                work, iwork, doption, ioption, dparm, iparm)
+            return (U[:,1:k], s, V[:,1:k], bnd)
         end
     end
 end
