@@ -178,11 +178,17 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             ioption::Vector{Int32}, dparm::Vector{$elty}, iparm::Vector{Int32})
 
             # extract values
+            # in both Fortran and Julia, arrays are column major
             k = length(s)
-            ldu = stride(U, 2)
-            ldv = stride(V, 2)
+            ldu, ku = size(U)
+            ldv, kv = size(V)
 
             # check
+            k <= kmax || error("too many triplets requested")
+            ldu >= m || error("U must have m = $m rows")
+            ku >= kmax+1 || error("U must have kmax+1 columns (kmax=$kmax)")
+            ldv >= n || error("V must have n = $n rows")
+            kv >= kmax || error("V must have kmax columns (kmax=$kmax)")
 
             # allocate
             info = Int32[0]
