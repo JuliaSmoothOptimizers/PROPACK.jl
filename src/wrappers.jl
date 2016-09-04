@@ -6,6 +6,39 @@ const libzpropack = joinpath(Pkg.dir("PROPACK"), "deps", "PROPACK", "complex16",
 for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
                              (:dlansvd_, :libdpropack, Float64))
     @eval begin
+        """lansvd!: Compute leading singular triplets.
+
+        - jobu: compute left singular vectors ('Y'/'N')
+        - jobv: compute right singular vectors ('Y'/'N')
+        - m: number of rows of A
+        - n: number of cols of A
+        - kmax: maximum number of iterations (= max dimension of Krylov space)
+        - aprod: function defining the linear operator A
+        - U: m x k array to store left singular vectors (k ≤ min(kmax,m,n))
+        - s: length k array to store desired singular values (k ≤ min(kmax,m,n))
+        - bnd: length k array to store error estimates on the singular values
+        - V: n x k array to store right singular vectors
+        - tolin: desired accuracy; the error on s[i] is approximately
+            max(16ϵ s[1], tolin * s[i])
+        - work: work array of size
+            - m + n + 9*kmax + 2*kmax^2 + 4 + max(m+n, 4*kmax+4) if jobu = jobv = 'N'
+            - m + n + 9*kmax + 5*kmax^2 + 4 + max(3*kmax^2 + 4*kmax+4, nb*max(m,n)) otherwise
+              where nb is a BLAS-3 block size
+        - iwork: integer work array of size
+            - 2*kmax + 1 if jobu = jobv = 'N'
+            - 8*kmax     otherwise
+        - doption: [δ, η, ‖A‖], where
+            - δ: the level of orthogonality desired,
+            - η: vectors with components larger than η will be purged during reorthogonalization
+            - ‖A‖: estimate of the norm of A
+        - ioption: [cgs, elr], where
+            - cgs: 1 = classical Gram-Schmidt, 0 = modified Gram-Schmidt
+            - elr: 1 = extended local orthogonality
+        - dparm: array for passing data to aprod
+        - iparm: array for passing integer data to aprod.
+
+        Returns: (U, s, V, bnd).
+        """
         function lansvd!(jobu::Char, jobv::Char, m::Integer, n::Integer,
             kmax::Integer, aprod, U::StridedMatrix{$elty}, s::Vector{$elty},
             bnd::Vector{$elty}, V::StridedMatrix{$elty}, tolin::$elty,
@@ -43,6 +76,19 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             return U, s, V, bnd
         end
 
+        """lansvd: Compute leading singular triplets: simplified interface.
+
+        - jobu: compute left singular vectors ('Y'/'N')
+        - jobv: compute right singular vectors ('Y'/'N')
+        - m: number of rows of A
+        - n: number of cols of A
+        - pff: pointer to function defining the linear operator A
+        - initvec: starting vector for bidiagonalization
+        - k: number of triplets desired
+        - kmax: maximum number of iterations (= max dimension of Krylov space)
+        - tolin: desired accuracy; the error on s[i] is approximately
+            max(16ϵ s[1], tolin * s[i])
+        """
         function lansvd(jobu::Char, jobv::Char, m::Integer, n::Integer, pff::Ptr{Void},
             initvec::Vector{$elty}, k::Integer, kmax::Integer, tolin::$elty)
 
@@ -82,6 +128,44 @@ end
 for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
                              (:dlansvd_irl_, :libdpropack, Float64))
     @eval begin
+
+        """lansvd_irl!: Compute leading singular triplets.
+
+        - which: compute triplets for largest ('L') or smallest ('S') singular values
+        - jobu: compute left singular vectors ('Y'/'N')
+        - jobv: compute right singular vectors ('Y'/'N')
+        - m: number of rows of A
+        - n: number of cols of A
+        - kmax: maximum number of iterations (= max dimension of Krylov space)
+        - p: number of shifts per restart
+        - maxiter: maximum number of restarts
+        - aprod: function defining the linear operator A
+        - U: m x k array to store left singular vectors (k ≤ min(kmax-p,m,n))
+        - s: length k array to store desired singular values (k ≤ min(kmax-p,m,n))
+        - bnd: length k array to store error estimates on the singular values
+        - V: n x k array to store right singular vectors
+        - tolin: desired accuracy; the error on s[i] is approximately
+            max(16ϵ s[1], tolin * s[i])
+        - work: work array of size
+            - m + n + 9*kmax + 2*kmax^2 + 4 + max(m+n, 4*kmax+4) if jobu = jobv = 'N'
+            - m + n + 9*kmax + 5*kmax^2 + 4 + max(3*kmax^2 + 4*kmax+4, nb*max(m,n)) otherwise
+              where nb is a BLAS-3 block size
+        - iwork: integer work array of size
+            - 2*kmax + 1 if jobu = jobv = 'N'
+            - 8*kmax     otherwise
+        - doption: [δ, η, ‖A‖, gap], where
+            - δ: the level of orthogonality desired,
+            - η: vectors with components larger than η will be purged during reorthogonalization
+            - ‖A‖: estimate of the norm of A
+            - gap: smallest relative gap between the shifts and the lower bound on Ritz values
+        - ioption: [cgs, elr], where
+            - cgs: 1 = classical Gram-Schmidt, 0 = modified Gram-Schmidt
+            - elr: 1 = extended local orthogonality
+        - dparm: array for passing data to aprod
+        - iparm: array for passing integer data to aprod.
+
+        Returns: (U, s, V, bnd).
+        """
         function lansvd_irl!(which::Char, jobu::Char, jobv::Char, m::Integer,
             n::Integer, dim::Integer, p::Integer, neig::Integer,
             maxiter::Integer, aprod, U::StridedMatrix{$elty}, s::Vector{$elty},
