@@ -212,13 +212,29 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             return U, s, V, bnd
         end
 
-        function lansvd_irl!(which::Char, jobu::Char, jobv::Char, m::Integer,
-            n::Integer, dim::Integer, p::Integer, neig::Integer,
-            pff::Ptr{Void}, initvec::Vector{$elty}, k::Integer, kmax::Integer,
-            tolin::$elty)
+        """lansvd_irl: Compute leading singular triplets, simplified interface.
+
+        - which: compute triplets for largest ('L') or smallest ('S') singular values
+        - jobu: compute left singular vectors ('Y'/'N')
+        - jobv: compute right singular vectors ('Y'/'N')
+        - m: number of rows of A
+        - n: number of cols of A
+        - kmax: maximum number of iterations (= max dimension of Krylov space)
+        - p: number of shifts per restart
+        - k: number of triplets desired
+        - maxiter: maximum number of restarts
+        - pff: pointer to function defining the linear operator A
+        - initvec: starting vector for bidiagonalization
+        - tolin: desired accuracy; the error on s[i] is approximately
+            max(16ϵ s[1], tolin * s[i]).
+
+        Returns: (U, s, V, bnd).
+        """
+        function lansvd_irl(which::Char, jobu::Char, jobv::Char, m::Integer,
+            n::Integer, kmax::Integer, p::Integer, k::Integer, maxiter::Integer,
+            pff::Ptr{Void}, initvec::Vector{$elty}, tolin::$elty)
 
             # Extract
-
             U = Array($elty, m, kmax + 1)
             copy!(U, 1, initvec, 1, m)
             s = Array($elty, k)
@@ -243,8 +259,9 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             dparm = $elty[0]
             iparm = Int32[0]
 
-            lansvd!(which, jobu, jobv, m, n, dim, p, neig, maxiter, pff, U, s,
-                bnd, V, tolin, work, iwork, doption, ioption, dparm, iparm)
+            (U, s, V, bnd) = lansvd_irl!(which, jobu, jobv, m, n, kmax, p, maxiter,
+                pff, U, s, bnd, V, tolin, work, iwork, doption, ioption, dparm, iparm)
+            return (U[:,1:k], s, V[:,1:k], bnd)
         end
     end
 end
