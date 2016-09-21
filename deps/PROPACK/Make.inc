@@ -1,5 +1,7 @@
 ifeq ($(OS), Windows_NT)
     SLIB = dll
+    BLAS = -lopenblas
+    LAPACK = -lopenblas
 else
     UNAME := $(shell uname)
     ifeq ($(UNAME), Darwin)
@@ -7,11 +9,11 @@ else
     else
         SLIB = so
     endif
+    BLAS = -lblas
+    LAPACK = -llapack
 endif
 
 MGS = mgs.risc
 FC = gfortran
 FFLAG = -xf77-cpp-input
-BLAS = -lblas
-LAPACK = -llapack
 LDFLAGS = -fPIC $(LAPACK) $(BLAS)
