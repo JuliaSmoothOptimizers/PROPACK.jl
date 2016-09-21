@@ -33,6 +33,29 @@ function __f__{T}(transa_::Ptr{UInt8}, m_::Ptr{Int32}, n_::Ptr{Int32},
   nothing
 end
 
+"""
+    tsvd(A::AbstractMatrix; kwargs...)
+
+Compute a few leading singular triplets of `A` using only products with `A` and `A'`.
+
+#### Keyword arguments
+- `initvec::Vector`: initial vector for the iterations (default: zeros)
+- `k::Integer`: number of leading singular values to approximate (default: 1)
+- `kmax::Integer`: maximum dimensionality of search space (default: `min(size(A))`+10)
+- `tolin::Real`: desired accuracy; the error on `s[i]` is approximately `max(16ϵ s[1], tolin * s[i])`
+  (default: √ϵ).
+
+#### Return values
+- `U::Array`: orthogonal matrix of left singular vectors
+- `s::Vector`: approximate leading singular values
+- `V::Array`: orthogonal matrix of right singular vectors
+- `bnd::Array`: bound on the accuracy of each singular value
+- `nprod::Int`: number of products with `A` required
+- `ntprod::Int`: number of products with `A'` required.
+
+The arrays `U`, `s` and `V` are such that `A - U * diagm(s) * V'` should be of the order of the next
+largest singular value.
+"""
 function tsvd{T}(A::AbstractMatrix{T};
                  initvec::Vector{T} = zeros(T, size(A, 1)), k::Integer = 1,
                  kmax::Integer = min(size(A)...)+10,
@@ -47,6 +70,20 @@ function tsvd{T}(A::AbstractMatrix{T};
     return (U, s, V, bnd, op.nprod, op.ntprod)
 end
 
+"""
+    tsvdvals(A::AbstractMatrix; kwargs...)
+
+Compute a few leading singular values of `A` using only products with `A` and `A'`.
+
+#### Keyword arguments
+See the documentation of `tsvd()`.
+
+#### Return values
+- `s::Vector`: approximate leading singular values
+- `bnd::Array`: bound on the accuracy of each singular value
+- `nprod::Int`: number of products with `A` required
+- `ntprod::Int`: number of products with `A'` required.
+"""
 function tsvdvals{T}(A::AbstractMatrix{T};
                      initvec::Vector{T} = zeros(T, size(A, 1)), k::Integer = 1,
                      kmax::Integer = min(size(A)...)+10,
@@ -61,6 +98,36 @@ function tsvdvals{T}(A::AbstractMatrix{T};
     return (s, bnd, op.nprod, op.ntprod)
 end
 
+"""
+    tsvd_irl(A::AbstractMatrix; kwargs...)
+
+Compute a few extreme singular triplets of `A` using only products with `A` and `A'` and the
+implicitly restarted Lanczos bidiagonalization method.
+
+#### Keyword arguments
+- `smallest::Bool`: whether the smallest or leading triplets should be approximated (default: `True`)
+- `initvec::Vector`: initial vector for the iterations (default: zeros)
+- `kmax::Integer`: maximum dimensionality of search space (default: `min(size(A))`+10)
+- `p::Integer`: number of shifts per restart (default: 1)
+- `k::Integer`: number of extreme singular values to approximate (default: 1)
+- `maxiter::Integer`: maximum number of restarts (default: `min(size(A))`)
+- `tolin::Real`: desired accuracy; the error on `s[i]` is approximately `max(16ϵ s[1], tolin * s[i])`
+  (default: √ϵ).
+
+#### Return values
+- `U::Array`: orthogonal matrix of left singular vectors
+- `s::Vector`: approximate leading singular values
+- `V::Array`: orthogonal matrix of right singular vectors
+- `bnd::Array`: bound on the accuracy of each singular value
+- `nprod::Int`: number of products with `A` required
+- `ntprod::Int`: number of products with `A'` required.
+
+If `smallest == False`, the arrays `U`, `s` and `V` are such that `A - U * diagm(s) * V'` should be
+of the order of the next largest singular value.
+
+If `smallest == True`, `U * diagm(s) * V'` is (an approximation of) the best rank-`k` approximation
+of `A`.
+"""
 function tsvd_irl{T}(A::AbstractMatrix{T};
                      smallest::Bool = true, initvec::Vector{T} = zeros(T, size(A, 1)),
                      kmax::Integer = min(size(A)...)+10,
@@ -76,6 +143,21 @@ function tsvd_irl{T}(A::AbstractMatrix{T};
     return (U, s, V, bnd, op.nprod, op.ntprod)
 end
 
+"""
+    tsvdvals_irl(A::AbstractMatrix; kwargs...)
+
+Compute a few extreme singular values of `A` using only products with `A` and `A'` and the
+implicitly restarted Lanczos bidiagonalization method.
+
+#### Keyword arguments
+See the documentation of `tsdv_irl()`.
+
+#### Return values
+- `s::Vector`: approximate leading singular values
+- `bnd::Array`: bound on the accuracy of each singular value
+- `nprod::Int`: number of products with `A` required
+- `ntprod::Int`: number of products with `A'` required.
+"""
 function tsvdvals_irl{T}(A::AbstractMatrix{T};
                          smallest::Bool = true, initvec::Vector{T} = zeros(T, size(A, 1)),
                          kmax::Integer = min(size(A)...)+10,
