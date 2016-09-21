@@ -34,7 +34,7 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
         - ioption: [cgs, elr], where
             - cgs: 1 = classical Gram-Schmidt, 0 = modified Gram-Schmidt
             - elr: 1 = extended local orthogonality
-        - dparm: array for passing data to aprod
+        - dparm: array for passing data to aprod; WARNING: we use dparm as passthrough pointer!!!
         - iparm: array for passing integer data to aprod.
 
         Returns: (U, s, V, bnd).
@@ -43,7 +43,7 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             kmax::Integer, aprod, U::Array{$elty,2}, s::Vector{$elty},
             bnd::Vector{$elty}, V::Array{$elty,2}, tolin::$elty,
             work::Vector{$elty}, iwork::Vector{Int32}, doption::Vector{$elty},
-            ioption::Vector{Int32}, dparm::Vector{$elty}, iparm::Vector{Int32})
+            ioption::Vector{Int32}, dparm::Ptr{Void}, iparm::Vector{Int32})
 
             # extract values
             # in both Fortran and Julia, arrays are column major
@@ -94,7 +94,7 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             max(16ϵ s[1], tolin * s[i])
         """
         function lansvd(jobu::Char, jobv::Char, m::Integer, n::Integer, pff::Ptr{Void},
-            initvec::Vector{$elty}, k::Integer, kmax::Integer, tolin::$elty)
+            initvec::Vector{$elty}, k::Integer, kmax::Integer, tolin::$elty, dparm::Ptr{Void})
 
             # Extract
             U = Array($elty, m, kmax + 1)
@@ -118,7 +118,6 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             doption = $elty[sqrt(ϵ/k); ϵ^(3/4)/sqrt(k); 0.0]  # propack will estimate ‖A‖
             ioption = Int32[0; 1]
 
-            dparm = $elty[0]
             iparm = Int32[0]
 
             (U, s, V, bnd) = lansvd!(jobu, jobv, m, n, kmax, pff, U, s, bnd, V, tolin,
@@ -165,7 +164,7 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
         - ioption: [cgs, elr], where
             - cgs: 1 = classical Gram-Schmidt, 0 = modified Gram-Schmidt
             - elr: 1 = extended local orthogonality
-        - dparm: array for passing data to aprod
+        - dparm: array for passing data to aprod; WARNING: we use dparm as passthrough pointer!!!
         - iparm: array for passing integer data to aprod.
 
         Returns: (U, s, V, bnd).
@@ -175,7 +174,7 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             maxiter::Integer, aprod, U::Array{$elty,2}, s::Vector{$elty},
             bnd::Vector{$elty}, V::Array{$elty,2}, tolin::$elty,
             work::Vector{$elty}, iwork::Vector{Int32}, doption::Vector{$elty},
-            ioption::Vector{Int32}, dparm::Vector{$elty}, iparm::Vector{Int32})
+            ioption::Vector{Int32}, dparm::Ptr{Void}, iparm::Vector{Int32})
 
             # extract values
             # in both Fortran and Julia, arrays are column major
@@ -232,7 +231,7 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
         """
         function lansvd_irl(which::Char, jobu::Char, jobv::Char, m::Integer,
             n::Integer, kmax::Integer, p::Integer, k::Integer, maxiter::Integer,
-            pff::Ptr{Void}, initvec::Vector{$elty}, tolin::$elty)
+            pff::Ptr{Void}, initvec::Vector{$elty}, tolin::$elty, dparm::Ptr{Void})
 
             # Extract
             U = Array($elty, m, kmax + 1)
@@ -256,7 +255,6 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             doption = $elty[sqrt(ϵ); ϵ^(3/4); 0.0; ϵ^(1/6)]
             ioption = Int32[0; 1]
 
-            dparm = $elty[0]
             iparm = Int32[0]
 
             (U, s, V, bnd) = lansvd_irl!(which, jobu, jobv, m, n, kmax, p, maxiter,
