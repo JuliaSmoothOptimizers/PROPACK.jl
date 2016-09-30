@@ -2,10 +2,12 @@ module PROPACK
 
 export tsvd, tsvdvals, tsvd_irl, tsvdvals_irl
 
+using LinearOperators
+
 include("wrappers.jl")
 
 type PropackOperator{T}
-  A::AbstractMatrix{T}
+  A::AbstractLinearOperator{T}
   nprod::Int
   ntprod::Int
 end
@@ -34,7 +36,7 @@ function __f__{T}(transa_::Ptr{UInt8}, m_::Ptr{Int32}, n_::Ptr{Int32},
 end
 
 """
-    tsvd(A::AbstractMatrix; kwargs...)
+    tsvd(A::AbstractLinearOperator; kwargs...)
 
 Compute a few leading singular triplets of `A` using only products with `A` and `A'`.
 
@@ -56,7 +58,7 @@ Compute a few leading singular triplets of `A` using only products with `A` and 
 The arrays `U`, `s` and `V` are such that `A - U * diagm(s) * V'` should be of the order of the next
 largest singular value.
 """
-function tsvd{T}(A::AbstractMatrix{T};
+function tsvd{T}(A::AbstractLinearOperator{T};
                  initvec::Vector{T} = zeros(T, size(A, 1)), k::Integer = 1,
                  kmax::Integer = min(size(A)...)+10,
                  tolin::Real = sqrt(eps(real(one(T)))))
@@ -71,7 +73,7 @@ function tsvd{T}(A::AbstractMatrix{T};
 end
 
 """
-    tsvdvals(A::AbstractMatrix; kwargs...)
+    tsvdvals(A::AbstractLinearOperator; kwargs...)
 
 Compute a few leading singular values of `A` using only products with `A` and `A'`.
 
@@ -84,7 +86,7 @@ See the documentation of `tsvd()`.
 - `nprod::Int`: number of products with `A` required
 - `ntprod::Int`: number of products with `A'` required.
 """
-function tsvdvals{T}(A::AbstractMatrix{T};
+function tsvdvals{T}(A::AbstractLinearOperator{T};
                      initvec::Vector{T} = zeros(T, size(A, 1)), k::Integer = 1,
                      kmax::Integer = min(size(A)...)+10,
                      tolin::Real = sqrt(eps(real(one(T)))))
@@ -99,7 +101,7 @@ function tsvdvals{T}(A::AbstractMatrix{T};
 end
 
 """
-    tsvd_irl(A::AbstractMatrix; kwargs...)
+    tsvd_irl(A::AbstractLinearOperator; kwargs...)
 
 Compute a few extreme singular triplets of `A` using only products with `A` and `A'` and the
 implicitly restarted Lanczos bidiagonalization method.
@@ -128,7 +130,7 @@ of the order of the next largest singular value.
 If `smallest == True`, `U * diagm(s) * V'` is (an approximation of) the best rank-`k` approximation
 of `A`.
 """
-function tsvd_irl{T}(A::AbstractMatrix{T};
+function tsvd_irl{T}(A::AbstractLinearOperator{T};
                      smallest::Bool = true, initvec::Vector{T} = zeros(T, size(A, 1)),
                      kmax::Integer = min(size(A)...)+10,
                      p::Integer = 1, k::Integer = 1,
@@ -144,7 +146,7 @@ function tsvd_irl{T}(A::AbstractMatrix{T};
 end
 
 """
-    tsvdvals_irl(A::AbstractMatrix; kwargs...)
+    tsvdvals_irl(A::AbstractLinearOperator; kwargs...)
 
 Compute a few extreme singular values of `A` using only products with `A` and `A'` and the
 implicitly restarted Lanczos bidiagonalization method.
@@ -158,7 +160,7 @@ See the documentation of `tsdv_irl()`.
 - `nprod::Int`: number of products with `A` required
 - `ntprod::Int`: number of products with `A'` required.
 """
-function tsvdvals_irl{T}(A::AbstractMatrix{T};
+function tsvdvals_irl{T}(A::AbstractLinearOperator{T};
                          smallest::Bool = true, initvec::Vector{T} = zeros(T, size(A, 1)),
                          kmax::Integer = min(size(A)...)+10,
                          p::Integer = 1, k::Integer = 1,
@@ -170,6 +172,11 @@ function tsvdvals_irl{T}(A::AbstractMatrix{T};
     dparm = pointer_from_objref(op)
     _, s, _, bnd = lansvd_irl(smallest ? 'S' : 'L', 'N', 'N', m, n, kmax, p, k, maxiter, __pf__, initvec, tolin, dparm)
     return (s, bnd, op.nprod, op.ntprod)
+end
+
+# interface for matrices
+for fname in (:tsvd, :tsvdvals, :tsvd_irl, :tsvdvals_irl)
+  @eval $fname{T}(A::AbstractMatrix{T}; kwargs...) = $fname(LinearOperator(A); kwargs...)
 end
 
 end # module
