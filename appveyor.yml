@@ -8,6 +8,22 @@ environment:
     MSYSTEM: MINGW64
     BIT: 64
     BUILDTOOL: make
+  - JULIAVERSION: "julialang/bin/winnt/x64/0.5/julia-0.5-latest-win64.exe"
+    COMPILER: msys2
+    PLATFORM: x64
+    MSYS2_ARCH: x86_64
+    MSYS2_DIR: msys64
+    MSYSTEM: MINGW64
+    BIT: 64
+    BUILDTOOL: make
+  - JULIAVERSION: "julialang/bin/winnt/x64/0.6/julia-0.6-latest-win64.exe"
+    COMPILER: msys2
+    PLATFORM: x64
+    MSYS2_ARCH: x86_64
+    MSYS2_DIR: msys64
+    MSYSTEM: MINGW64
+    BIT: 64
+    BUILDTOOL: make
 
 branches:
   only:
