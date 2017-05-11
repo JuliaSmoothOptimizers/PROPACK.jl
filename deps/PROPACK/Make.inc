@@ -15,5 +15,5 @@ endif
 
 MGS = mgs.risc
 FC = gfortran
-FFLAG = -xf77-cpp-input
+FFLAG = -xf77-cpp-input -fdefault-integer-8 -fno-align-commons
 LDFLAGS = -fPIC $(LAPACK) $(BLAS)
