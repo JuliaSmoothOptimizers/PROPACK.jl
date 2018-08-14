@@ -1,6 +1,6 @@
 environment:
   matrix:
-  - JULIAVERSION: "julialang/bin/winnt/x64/0.4/julia-0.4-latest-win64.exe"
+  - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x64/0.6/julia-0.6-latest-win64.exe"
     COMPILER: msys2
     PLATFORM: x64
     MSYS2_ARCH: x86_64
@@ -8,7 +8,7 @@ environment:
     MSYSTEM: MINGW64
     BIT: 64
     BUILDTOOL: make
-  - JULIAVERSION: "julialang/bin/winnt/x64/0.5/julia-0.5-latest-win64.exe"
+  - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x64/0.7/julia-0.7-latest-win64.exe"
     COMPILER: msys2
     PLATFORM: x64
     MSYS2_ARCH: x86_64
@@ -16,7 +16,7 @@ environment:
     MSYSTEM: MINGW64
     BIT: 64
     BUILDTOOL: make
-  - JULIAVERSION: "julialang/bin/winnt/x64/0.6/julia-0.6-latest-win64.exe"
+  - JULIA_URL: "https://julialangnightlies-s3.julialang.org/bin/winnt/x64/julia-latest-win64.exe"
     COMPILER: msys2
     PLATFORM: x64
     MSYS2_ARCH: x86_64
@@ -24,6 +24,10 @@ environment:
     MSYSTEM: MINGW64
     BIT: 64
     BUILDTOOL: make
+
+matrix:
+  allow_failures:
+    - JULIA_URL: "https://julialangnightlies-s3.julialang.org/bin/winnt/x64/julia-latest-win64.exe"
 
 branches:
   only:
@@ -33,7 +37,7 @@ skip_branch_with_pr: true
 
 install:
 # Download most recent Julia Windows binary
-  - ps: (new-object net.webclient).DownloadFile($("http://s3.amazonaws.com/"+$env:JULIAVERSION), "C:\projects\julia-binary.exe")
+  - ps: (new-object net.webclient).DownloadFile($($env:JULIA_URL), "C:\projects\julia-binary.exe")
 # Run installer silently, output to C:\projects\julia
   - C:\projects\julia-binary.exe /S /D=C:\projects\julia
   - '%APPVEYOR_BUILD_FOLDER%\ci\install.bat'
@@ -41,7 +45,7 @@ install:
 build_script:
 # Need to convert from shallow to complete for Pkg.clone to work
   - IF EXIST .git\shallow (git fetch --unshallow)
-  - C:\projects\julia\bin\julia -e "versioninfo(); Pkg.init(); Pkg.clone(pwd(), \"PROPACK\"); Pkg.build(\"PROPACK\");"
+  - C:\projects\julia\bin\julia -e "versioninfo(); VERSION < v\"0.7.0-beta2.0\" && Pkg.init(); Pkg.clone(pwd(), \"PROPACK\"); Pkg.build(\"PROPACK\");"
 
 test_script:
   - C:\projects\julia\bin\julia -e "Pkg.test(\"PROPACK\")"

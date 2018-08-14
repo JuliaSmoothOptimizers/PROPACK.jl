@@ -5,9 +5,13 @@ os:
   - osx
 
 julia:
-  - 0.4
-  - 0.5
   - 0.6
+  - 0.7
+  - nightly
+
+matrix:
+  allow_failures:
+    - julia: nightly
 
 notifications:
   email: false
@@ -22,6 +26,7 @@ before_install:
       sudo apt-get install -y gfortran libblas-dev liblapack-dev;
       sudo ln -s /usr/lib/gcc/x86_64-linux-gnu/$(gfortran -dumpversion | cut -f1,2 -d.)/libgfortran.so /usr/local/lib;
     else
+      brew cask uninstall oclint;
       brew install gcc;
     fi
 
