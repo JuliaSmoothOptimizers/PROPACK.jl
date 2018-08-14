@@ -27,7 +27,7 @@ for i = 1 : k
   @assert bnd[i] ≤ max(16ϵ * s[1], tolin * s[i])
   @assert abs(s[i] - σ[i]) ≤ tolin * σ[i]
 end
-@assert norm(U * diagm(s) * V' - A) ≤ 1.1 * σ[k+1]
+@assert norm(U * diagm(s) * V' - A) ≤ 1.2 * σ[k+1]
 
 # ensure tsvdvals returns the same singular value estimates
 s2, _, nprod, ntprod = tsvdvals(A, k=k, tolin=tolin)
