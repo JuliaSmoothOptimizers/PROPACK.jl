@@ -6,7 +6,7 @@ using LinearOperators
 
 include("wrappers.jl")
 
-type PropackOperator{T}
+mutable struct PropackOperator{T}
   A::AbstractLinearOperator{T}
   nprod::Int
   ntprod::Int

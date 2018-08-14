@@ -1,4 +1,5 @@
 p = pwd()
-cd(Pkg.dir("PROPACK/deps/PROPACK"))
+here = dirname(@__FILE__)
+cd(joinpath(here, "PROPACK"))
 run(`make`)
 cd(p)

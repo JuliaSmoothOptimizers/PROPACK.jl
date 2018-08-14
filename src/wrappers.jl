@@ -50,6 +50,8 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             k = length(s)
             ldu, ku = size(U)
             ldv, kv = size(V)
+            lwork = length(work)
+            liwork = length(iwork)
 
             # check
             k <= kmax || error("too many triplets requested")
@@ -62,17 +64,17 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             info = Int32[0]
 
             ccall(($(string(fname)), $lname), Void,
-                (Ptr{UInt8}, Ptr{UInt8}, Ptr{Int32}, Ptr{Int32},
-                 Ptr{Int32}, Ptr{Int32}, Ptr{Void}, Ptr{$elty},
-                 Ptr{Int32}, Ptr{$elty}, Ptr{$elty}, Ptr{$elty},
-                 Ptr{Int32}, Ptr{$elty}, Ptr{$elty}, Ptr{Int32},
-                 Ptr{Int32}, Ptr{Int32}, Ptr{$elty}, Ptr{Int32},
+                (Ref{UInt8}, Ref{UInt8}, Ref{Int32}, Ref{Int32},
+                 Ref{Int32}, Ref{Int32}, Ptr{Void}, Ptr{$elty},
+                 Ref{Int32}, Ptr{$elty}, Ptr{$elty}, Ptr{$elty},
+                 Ref{Int32}, Ref{$elty}, Ptr{$elty}, Ref{Int32},
+                 Ptr{Int32}, Ref{Int32}, Ptr{$elty}, Ptr{Int32},
                  Ptr{Int32}, Ptr{$elty}, Ptr{Int32}),
-                &jobu, &jobv, &m, &n,
-                &k, &kmax, aprod, U,
-                &ldu, s, bnd, V,
-                &ldv, &tolin, work, &length(work),
-                iwork, &length(iwork), doption, ioption,
+                jobu, jobv, m, n,
+                k, kmax, aprod, U,
+                ldu, s, bnd, V,
+                ldv, tolin, work, lwork,
+                iwork, liwork, doption, ioption,
                 info, dparm, iparm)
 
             info[1] == 0 || error("lansvd return code: $(info[1])")
@@ -97,11 +99,11 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             initvec::Vector{$elty}, k::Integer, kmax::Integer, tolin::$elty, dparm::Ptr{Void})
 
             # Extract
-            U = Array($elty, m, kmax + 1)
+            U = Array{$elty}(m, kmax + 1)
             copy!(U, 1, initvec, 1, m)
-            s = Array($elty, k)
-            bnd = Array($elty, k)
-            V = Array($elty, n, kmax)
+            s = Vector{$elty}(k)
+            bnd = Vector{$elty}(k)
+            V = Array{$elty}(n, kmax)
 
             nb = 16 # BLAS-3 blocking size. Don't know the size. It's almost surely a power of 2.
             if jobu == 'N' && jobv == 'N'
@@ -111,8 +113,8 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
                 lwork = Int32(m + n + 9kmax + 5kmax*kmax + 4 + max(3kmax*kmax + 4kmax + 4, nb*max(m, n)))
                 liwork = Int32(8kmax)
             end
-            work = Array($elty, lwork)
-            iwork = Array(Int32, liwork)
+            work = Vector{$elty}(lwork)
+            iwork = Vector{Int32}(liwork)
 
             ϵ = eps($elty)
             doption = $elty[sqrt(ϵ/k); ϵ^(3/4)/sqrt(k); 0.0]  # propack will estimate ‖A‖
@@ -181,6 +183,8 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             k = length(s)
             ldu, ku = size(U)
             ldv, kv = size(V)
+            lwork = length(work)
+            liwork = length(iwork)
 
             # check
             k <= kmax || error("too many triplets requested")
@@ -193,17 +197,17 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             info = Int32[0]
 
             ccall(($(string(fname)), $lname), Void,
-                (Ptr{UInt8}, Ptr{UInt8}, Ptr{UInt8}, Ptr{Int32}, Ptr{Int32},
-                 Ptr{Int32}, Ptr{Int32}, Ptr{Int32}, Ptr{Int32}, Ptr{Void}, Ptr{$elty},
-                 Ptr{Int32}, Ptr{$elty}, Ptr{$elty}, Ptr{$elty},
-                 Ptr{Int32}, Ptr{$elty}, Ptr{$elty}, Ptr{Int32},
-                 Ptr{Int32}, Ptr{Int32}, Ptr{$elty}, Ptr{Int32},
+                (Ref{UInt8}, Ref{UInt8}, Ref{UInt8}, Ref{Int32}, Ref{Int32},
+                 Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Int32}, Ptr{Void}, Ptr{$elty},
+                 Ref{Int32}, Ptr{$elty}, Ptr{$elty}, Ptr{$elty},
+                 Ref{Int32}, Ref{$elty}, Ptr{$elty}, Ref{Int32},
+                 Ptr{Int32}, Ref{Int32}, Ptr{$elty}, Ptr{Int32},
                  Ptr{Int32}, Ptr{$elty}, Ptr{Int32}),
-                &which, &jobu, &jobv, &m, &n,
-                &kmax, &p, &k, &maxiter, aprod, U,
-                &ldu, s, bnd, V,
-                &ldv, &tolin, work, &length(work),
-                iwork, &length(iwork), doption, ioption,
+                which, jobu, jobv, m, n,
+                kmax, p, k, maxiter, aprod, U,
+                ldu, s, bnd, V,
+                ldv, tolin, work, lwork,
+                iwork, liwork, doption, ioption,
                 info, dparm, iparm)
 
             info[1] == 0 || error("lansvd_irl return code: $(info[1])")
@@ -234,11 +238,11 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             pff::Ptr{Void}, initvec::Vector{$elty}, tolin::$elty, dparm::Ptr{Void})
 
             # Extract
-            U = Array($elty, m, kmax + 1)
+            U = Array{$elty}(m, kmax + 1)
             copy!(U, 1, initvec, 1, m)
-            s = Array($elty, k)
-            bnd = Array($elty, k)
-            V = Array($elty, n, kmax)
+            s = Vector{$elty}(k)
+            bnd = Vector{$elty}(k)
+            V = Array{$elty}(n, kmax)
 
             nb = 16 # BLAS-3 blocking size. Don't know the size. It's almost surely a power of 2.
             if jobu == 'N' && jobv == 'N'
@@ -248,8 +252,8 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
                 lwork = Int32(m + n + 10kmax + 5kmax*kmax + 4 + max(3kmax*kmax + 4kmax + 4, nb*max(m, n)))
                 liwork = Int32(8kmax)
             end
-            work = Array($elty, lwork)
-            iwork = Array(Int32, liwork)
+            work = Vector{$elty}(lwork)
+            iwork = Vector{Int32}(liwork)
 
             ϵ = eps($elty)
             doption = $elty[sqrt(ϵ); ϵ^(3/4); 0.0; ϵ^(1/6)]
