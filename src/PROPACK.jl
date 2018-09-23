@@ -14,16 +14,16 @@ end
 
 # callback using dparm as passthrough pointer to save the linear operator
 # thanks http://julialang.org/blog/2013/05/callback !
-function __f__{T}(transa_::Ptr{UInt8}, m_::Ptr{Int32}, n_::Ptr{Int32},
-                  x_::Ptr{T}, y_::Ptr{T}, dparm_::Ptr{T}, iparm::Ptr{Int32})
+function __f__(transa_::Ptr{UInt8}, m_::Ptr{Int32}, n_::Ptr{Int32},
+               x_::Ptr{T}, y_::Ptr{T}, dparm_::Ptr{T}, iparm::Ptr{Int32}) where T
   m = unsafe_load(m_)
   n = unsafe_load(n_)
-  dparm = reinterpret(Ptr{Void}, dparm_)
+  dparm = reinterpret(Ptr{Nothing}, dparm_)
   transa = Char(unsafe_load(transa_))
   op = unsafe_pointer_to_objref(dparm)::PropackOperator
   A = op.A
   (nargin, nargout) = transa == 'n' ? (n, m) : (m, n)
-  x = VERSION < v"0.5" ? pointer_to_array(x_, nargin) : unsafe_wrap(Array, x_, nargin)
+  x = unsafe_wrap(Array, x_, nargin)
   if transa == 'n'
     y = A * x
     op.nprod += 1
@@ -31,7 +31,7 @@ function __f__{T}(transa_::Ptr{UInt8}, m_::Ptr{Int32}, n_::Ptr{Int32},
     y = A' * x
     op.ntprod += 1
   end
-  unsafe_copy!(y_, pointer(y), nargout)
+  unsafe_copyto!(y_, pointer(y), nargout)
   nothing
 end
 
@@ -58,12 +58,12 @@ Compute a few leading singular triplets of `A` using only products with `A` and 
 The arrays `U`, `s` and `V` are such that `A - U * diagm(s) * V'` should be of the order of the next
 largest singular value.
 """
-function tsvd{T}(A::AbstractLinearOperator{T};
-                 initvec::Vector{T} = zeros(T, size(A, 1)), k::Integer = 1,
-                 kmax::Integer = min(size(A)...)+10,
-                 tolin::Real = sqrt(eps(real(one(T)))))
+function tsvd(A::AbstractLinearOperator{T};
+              initvec::Vector{T} = zeros(T, size(A, 1)), k::Integer = 1,
+              kmax::Integer = min(size(A)...)+10,
+              tolin::Real = sqrt(eps(real(one(T))))) where T
 
-    __pf__ = cfunction(__f__, Void, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
+    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
 
     m, n = size(A)
     op = PropackOperator(A, 0, 0)
@@ -86,12 +86,12 @@ See the documentation of `tsvd()`.
 - `nprod::Int`: number of products with `A` required
 - `ntprod::Int`: number of products with `A'` required.
 """
-function tsvdvals{T}(A::AbstractLinearOperator{T};
-                     initvec::Vector{T} = zeros(T, size(A, 1)), k::Integer = 1,
-                     kmax::Integer = min(size(A)...)+10,
-                     tolin::Real = sqrt(eps(real(one(T)))))
+function tsvdvals(A::AbstractLinearOperator{T};
+                  initvec::Vector{T} = zeros(T, size(A, 1)), k::Integer = 1,
+                  kmax::Integer = min(size(A)...)+10,
+                  tolin::Real = sqrt(eps(real(one(T))))) where T
 
-    __pf__ = cfunction(__f__, Void, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
+    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
 
     m, n = size(A)
     op = PropackOperator(A, 0, 0)
@@ -130,13 +130,13 @@ of the order of the next largest singular value.
 If `smallest == True`, `U * diagm(s) * V'` is (an approximation of) the best rank-`k` approximation
 of `A`.
 """
-function tsvd_irl{T}(A::AbstractLinearOperator{T};
-                     smallest::Bool = true, initvec::Vector{T} = zeros(T, size(A, 1)),
-                     kmax::Integer = min(size(A)...)+10,
-                     p::Integer = 1, k::Integer = 1,
-                     maxiter::Integer = min(size(A)...), tolin::Real = sqrt(eps(real(one(T)))))
+function tsvd_irl(A::AbstractLinearOperator{T};
+                  smallest::Bool = true, initvec::Vector{T} = zeros(T, size(A, 1)),
+                  kmax::Integer = min(size(A)...)+10,
+                  p::Integer = 1, k::Integer = 1,
+                  maxiter::Integer = min(size(A)...), tolin::Real = sqrt(eps(real(one(T))))) where T
 
-    __pf__ = cfunction(__f__, Void, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
+    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
 
     m, n = size(A)
     op = PropackOperator(A, 0, 0)
@@ -160,12 +160,12 @@ See the documentation of `tsdv_irl()`.
 - `nprod::Int`: number of products with `A` required
 - `ntprod::Int`: number of products with `A'` required.
 """
-function tsvdvals_irl{T}(A::AbstractLinearOperator{T};
-                         smallest::Bool = true, initvec::Vector{T} = zeros(T, size(A, 1)),
-                         kmax::Integer = min(size(A)...)+10,
-                         p::Integer = 1, k::Integer = 1,
-                         maxiter::Integer = min(size(A)...), tolin::Real = sqrt(eps(real(one(T)))))
-    __pf__ = cfunction(__f__, Void, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
+function tsvdvals_irl(A::AbstractLinearOperator{T};
+                      smallest::Bool = true, initvec::Vector{T} = zeros(T, size(A, 1)),
+                      kmax::Integer = min(size(A)...)+10,
+                      p::Integer = 1, k::Integer = 1,
+                      maxiter::Integer = min(size(A)...), tolin::Real = sqrt(eps(real(one(T))))) where T
+    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
 
     m, n = size(A)
     op = PropackOperator(A, 0, 0)
@@ -176,7 +176,7 @@ end
 
 # interface for matrices
 for fname in (:tsvd, :tsvdvals, :tsvd_irl, :tsvdvals_irl)
-  @eval $fname{T}(A::AbstractMatrix{T}; kwargs...) = $fname(LinearOperator(A); kwargs...)
+  @eval $fname(A::AbstractMatrix{T}; kwargs...) where T = $fname(LinearOperator(A); kwargs...)
 end
 
 end # module
