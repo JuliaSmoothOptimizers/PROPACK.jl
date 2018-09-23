@@ -1,6 +1,6 @@
 environment:
   matrix:
-  - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x64/0.6/julia-0.6-latest-win64.exe"
+  - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x64/0.7/julia-0.7-latest-win64.exe"
     COMPILER: msys2
     PLATFORM: x64
     MSYS2_ARCH: x86_64
@@ -8,7 +8,7 @@ environment:
     MSYSTEM: MINGW64
     BIT: 64
     BUILDTOOL: make
-  - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x64/0.7/julia-0.7-latest-win64.exe"
+  - JULIA_URL: "https://julialang-s3.julialang.org/bin/winnt/x64/1.0/julia-1.0-latest-win64.exe"
     COMPILER: msys2
     PLATFORM: x64
     MSYS2_ARCH: x86_64
@@ -45,7 +45,7 @@ install:
 build_script:
 # Need to convert from shallow to complete for Pkg.clone to work
   - IF EXIST .git\shallow (git fetch --unshallow)
-  - C:\projects\julia\bin\julia -e "versioninfo(); VERSION < v\"0.7.0-beta2.0\" && Pkg.init(); Pkg.clone(pwd(), \"PROPACK\"); Pkg.build(\"PROPACK\");"
+  - C:\projects\julia\bin\julia -e "using InteractiveUtils; versioninfo(); using Pkg; Pkg.clone(pwd(), \"PROPACK\"); Pkg.build(\"PROPACK\");"
 
 test_script:
-  - C:\projects\julia\bin\julia -e "Pkg.test(\"PROPACK\")"
+  - C:\projects\julia\bin\julia -e "using Pkg; Pkg.test(\"PROPACK\")"
