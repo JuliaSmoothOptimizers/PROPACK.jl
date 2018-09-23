@@ -1,19 +1,20 @@
+using LinearAlgebra
 using PROPACK
-using Base.Test
+using Test
 
 ϵ = eps(Float64)
 
 # construct a matrix with chosen singular values
 m, n = 10, 5  # choose n ≤ m
 σ = collect(n:-1:1)  # in decreasing order because Propack always returns them so
-Σ = [diagm(σ) ; zeros(m-n, m-n)]
+Σ = [diagm(0 => σ) ; zeros(m-n, m-n)]
 U, _ = qr(rand(m, m))
 V, _ = qr(rand(n, n))
 A = U * Σ * V'
 
 # compute a few leading singular values and vectors with lansvd
 k = 3
-tolin=sqrt(ϵ)
+tolin = sqrt(ϵ)
 U, s, V, bnd, nprod, ntprod = tsvd(A, k=k, tolin=tolin)
 @assert size(U) == (m, k)
 @assert length(s) == k
@@ -27,7 +28,7 @@ for i = 1 : k
   @assert bnd[i] ≤ max(16ϵ * s[1], tolin * s[i])
   @assert abs(s[i] - σ[i]) ≤ tolin * σ[i]
 end
-@assert norm(U * diagm(s) * V' - A) ≤ 1.2 * σ[k+1]
+@assert norm(U * diagm(0 => s) * V' - A) ≤ 1.2 * σ[k+1]
 
 # ensure tsvdvals returns the same singular value estimates
 s2, _, nprod, ntprod = tsvdvals(A, k=k, tolin=tolin)

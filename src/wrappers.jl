@@ -1,7 +1,7 @@
-const libspropack = joinpath(Pkg.dir("PROPACK"), "deps", "PROPACK", "single", "libspropack")
-const libdpropack = joinpath(Pkg.dir("PROPACK"), "deps", "PROPACK", "double", "libdpropack")
-const libcpropack = joinpath(Pkg.dir("PROPACK"), "deps", "PROPACK", "complex8", "libcpropack")
-const libzpropack = joinpath(Pkg.dir("PROPACK"), "deps", "PROPACK", "complex16", "libzpropack")
+const libspropack = joinpath(dirname(pathof(PROPACK)), "..", "deps", "PROPACK", "single", "libspropack")
+const libdpropack = joinpath(dirname(pathof(PROPACK)), "..", "deps", "PROPACK", "double", "libdpropack")
+const libcpropack = joinpath(dirname(pathof(PROPACK)), "..", "deps", "PROPACK", "complex8", "libcpropack")
+const libzpropack = joinpath(dirname(pathof(PROPACK)), "..", "deps", "PROPACK", "complex16", "libzpropack")
 
 for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
                              (:dlansvd_, :libdpropack, Float64))
@@ -43,7 +43,7 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             kmax::Integer, aprod, U::Array{$elty,2}, s::Vector{$elty},
             bnd::Vector{$elty}, V::Array{$elty,2}, tolin::$elty,
             work::Vector{$elty}, iwork::Vector{Int32}, doption::Vector{$elty},
-            ioption::Vector{Int32}, dparm::Ptr{Void}, iparm::Vector{Int32})
+            ioption::Vector{Int32}, dparm::Ptr{Nothing}, iparm::Vector{Int32})
 
             # extract values
             # in both Fortran and Julia, arrays are column major
@@ -63,9 +63,9 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             # allocate
             info = Int32[0]
 
-            ccall(($(string(fname)), $lname), Void,
+            ccall(($(string(fname)), $lname), Nothing,
                 (Ref{UInt8}, Ref{UInt8}, Ref{Int32}, Ref{Int32},
-                 Ref{Int32}, Ref{Int32}, Ptr{Void}, Ptr{$elty},
+                 Ref{Int32}, Ref{Int32}, Ptr{Nothing}, Ptr{$elty},
                  Ref{Int32}, Ptr{$elty}, Ptr{$elty}, Ptr{$elty},
                  Ref{Int32}, Ref{$elty}, Ptr{$elty}, Ref{Int32},
                  Ptr{Int32}, Ref{Int32}, Ptr{$elty}, Ptr{Int32},
@@ -95,15 +95,15 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
         - tolin: desired accuracy; the error on s[i] is approximately
             max(16ϵ s[1], tolin * s[i])
         """
-        function lansvd(jobu::Char, jobv::Char, m::Integer, n::Integer, pff::Ptr{Void},
-            initvec::Vector{$elty}, k::Integer, kmax::Integer, tolin::$elty, dparm::Ptr{Void})
+        function lansvd(jobu::Char, jobv::Char, m::Integer, n::Integer, pff::Ptr{Nothing},
+            initvec::Vector{$elty}, k::Integer, kmax::Integer, tolin::$elty, dparm::Ptr{Nothing})
 
             # Extract
-            U = Array{$elty}(m, kmax + 1)
-            copy!(U, 1, initvec, 1, m)
-            s = Vector{$elty}(k)
-            bnd = Vector{$elty}(k)
-            V = Array{$elty}(n, kmax)
+            U = Array{$elty}(undef, m, kmax + 1)
+            copyto!(U, 1, initvec, 1, m)
+            s = Vector{$elty}(undef, k)
+            bnd = Vector{$elty}(undef, k)
+            V = Array{$elty}(undef, n, kmax)
 
             nb = 16 # BLAS-3 blocking size. Don't know the size. It's almost surely a power of 2.
             if jobu == 'N' && jobv == 'N'
@@ -113,8 +113,8 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
                 lwork = Int32(m + n + 9kmax + 5kmax*kmax + 4 + max(3kmax*kmax + 4kmax + 4, nb*max(m, n)))
                 liwork = Int32(8kmax)
             end
-            work = Vector{$elty}(lwork)
-            iwork = Vector{Int32}(liwork)
+            work = Vector{$elty}(undef, lwork)
+            iwork = Vector{Int32}(undef, liwork)
 
             ϵ = eps($elty)
             doption = $elty[sqrt(ϵ/k); ϵ^(3/4)/sqrt(k); 0.0]  # propack will estimate ‖A‖
@@ -176,7 +176,7 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             maxiter::Integer, aprod, U::Array{$elty,2}, s::Vector{$elty},
             bnd::Vector{$elty}, V::Array{$elty,2}, tolin::$elty,
             work::Vector{$elty}, iwork::Vector{Int32}, doption::Vector{$elty},
-            ioption::Vector{Int32}, dparm::Ptr{Void}, iparm::Vector{Int32})
+            ioption::Vector{Int32}, dparm::Ptr{Nothing}, iparm::Vector{Int32})
 
             # extract values
             # in both Fortran and Julia, arrays are column major
@@ -196,9 +196,9 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             # allocate
             info = Int32[0]
 
-            ccall(($(string(fname)), $lname), Void,
+            ccall(($(string(fname)), $lname), Nothing,
                 (Ref{UInt8}, Ref{UInt8}, Ref{UInt8}, Ref{Int32}, Ref{Int32},
-                 Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Int32}, Ptr{Void}, Ptr{$elty},
+                 Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Int32}, Ptr{Nothing}, Ptr{$elty},
                  Ref{Int32}, Ptr{$elty}, Ptr{$elty}, Ptr{$elty},
                  Ref{Int32}, Ref{$elty}, Ptr{$elty}, Ref{Int32},
                  Ptr{Int32}, Ref{Int32}, Ptr{$elty}, Ptr{Int32},
@@ -235,14 +235,14 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
         """
         function lansvd_irl(which::Char, jobu::Char, jobv::Char, m::Integer,
             n::Integer, kmax::Integer, p::Integer, k::Integer, maxiter::Integer,
-            pff::Ptr{Void}, initvec::Vector{$elty}, tolin::$elty, dparm::Ptr{Void})
+            pff::Ptr{Nothing}, initvec::Vector{$elty}, tolin::$elty, dparm::Ptr{Nothing})
 
             # Extract
-            U = Array{$elty}(m, kmax + 1)
-            copy!(U, 1, initvec, 1, m)
-            s = Vector{$elty}(k)
-            bnd = Vector{$elty}(k)
-            V = Array{$elty}(n, kmax)
+            U = Array{$elty}(undef, m, kmax + 1)
+            copyto!(U, 1, initvec, 1, m)
+            s = Vector{$elty}(undef, k)
+            bnd = Vector{$elty}(undef, k)
+            V = Array{$elty}(undef, n, kmax)
 
             nb = 16 # BLAS-3 blocking size. Don't know the size. It's almost surely a power of 2.
             if jobu == 'N' && jobv == 'N'
@@ -252,8 +252,8 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
                 lwork = Int32(m + n + 10kmax + 5kmax*kmax + 4 + max(3kmax*kmax + 4kmax + 4, nb*max(m, n)))
                 liwork = Int32(8kmax)
             end
-            work = Vector{$elty}(lwork)
-            iwork = Vector{Int32}(liwork)
+            work = Vector{$elty}(undef, lwork)
+            iwork = Vector{Int32}(undef, liwork)
 
             ϵ = eps($elty)
             doption = $elty[sqrt(ϵ); ϵ^(3/4); 0.0; ϵ^(1/6)]
