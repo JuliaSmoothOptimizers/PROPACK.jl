@@ -5,8 +5,10 @@ os:
   - osx
 
 julia:
-  - 0.7
   - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
   - nightly
 
 matrix:
@@ -26,13 +28,10 @@ before_install:
       sudo apt-get install -y gfortran libblas-dev liblapack-dev;
       sudo ln -s /usr/lib/gcc/x86_64-linux-gnu/$(gfortran -dumpversion | cut -f1,2 -d.)/libgfortran.so /usr/local/lib;
     else
-      brew cask uninstall oclint;
+      brew update;
       brew install gcc;
     fi
-
-script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia --check-bounds=yes -e 'using Pkg; Pkg.clone(pwd()); Pkg.build("PROPACK"); Pkg.test("PROPACK"; coverage=true)'
 
 after_success:
   - julia -e 'using Pkg; cd(Pkg.dir("PROPACK")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'

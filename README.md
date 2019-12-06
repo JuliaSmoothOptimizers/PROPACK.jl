@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/JuliaSmoothOptimizers/PROPACK.jl.svg?branch=master)](https://travis-ci.org/JuliaSmoothOptimizers/PROPACK.jl)
 [![Build status](https://ci.appveyor.com/api/projects/status/s065u6mwkbyuldmw?svg=true)](https://ci.appveyor.com/project/dpo/propack-jl)
+[![Build Status](https://api.cirrus-ci.com/github/JuliaSmoothOptimizers/Krylov.jl.svg)](https://cirrus-ci.com/github/JuliaSmoothOptimizers/Krylov.jl)
 [![Coverage Status](https://coveralls.io/repos/github/JuliaSmoothOptimizers/PROPACK.jl/badge.svg?branch=master)](https://coveralls.io/github/JuliaSmoothOptimizers/PROPACK.jl?branch=master)
 
 A Julia interface to [PROPACK](http://sun.stanford.edu/~rmunk/PROPACK), a library for the computation of the truncated singular value decomposition of matrices or linear operators.
