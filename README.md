@@ -9,6 +9,8 @@ PROPACK only requires operator-vector products to estimate singular values and s
 
 ## How to Install
 
+On Linux, you'll need to install `gfortran`, `libblas-dev` and `liblapack-dev` to be able to build PROPACK.
+
 ```julia
 julia> ]
 pkg> add PROPACK
