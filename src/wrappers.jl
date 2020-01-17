@@ -1,8 +1,3 @@
-const libspropack = joinpath(dirname(pathof(PROPACK)), "..", "deps", "PROPACK", "single", "libspropack")
-const libdpropack = joinpath(dirname(pathof(PROPACK)), "..", "deps", "PROPACK", "double", "libdpropack")
-const libcpropack = joinpath(dirname(pathof(PROPACK)), "..", "deps", "PROPACK", "complex8", "libcpropack")
-const libzpropack = joinpath(dirname(pathof(PROPACK)), "..", "deps", "PROPACK", "complex16", "libzpropack")
-
 for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
                              (:dlansvd_, :libdpropack, Float64))
     @eval begin
@@ -42,8 +37,8 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
         function lansvd!(jobu::Char, jobv::Char, m::Integer, n::Integer,
             kmax::Integer, aprod, U::Array{$elty,2}, s::Vector{$elty},
             bnd::Vector{$elty}, V::Array{$elty,2}, tolin::$elty,
-            work::Vector{$elty}, iwork::Vector{Int32}, doption::Vector{$elty},
-            ioption::Vector{Int32}, dparm::Ptr{Nothing}, iparm::Vector{Int32})
+            work::Vector{$elty}, iwork::Vector{Int}, doption::Vector{$elty},
+            ioption::Vector{Int}, dparm::Ptr{Nothing}, iparm::Vector{Int})
 
             # extract values
             # in both Fortran and Julia, arrays are column major
@@ -61,15 +56,15 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             kv >= kmax || error("V must have kmax columns (kmax=$kmax)")
 
             # allocate
-            info = Int32[0]
+            info = Int[0]
 
             ccall(($(string(fname)), $lname), Nothing,
-                (Ref{UInt8}, Ref{UInt8}, Ref{Int32}, Ref{Int32},
-                 Ref{Int32}, Ref{Int32}, Ptr{Nothing}, Ptr{$elty},
-                 Ref{Int32}, Ptr{$elty}, Ptr{$elty}, Ptr{$elty},
-                 Ref{Int32}, Ref{$elty}, Ptr{$elty}, Ref{Int32},
-                 Ptr{Int32}, Ref{Int32}, Ptr{$elty}, Ptr{Int32},
-                 Ptr{Int32}, Ptr{$elty}, Ptr{Int32}),
+                (Ref{UInt8}, Ref{UInt8}, Ref{Int}, Ref{Int},
+                 Ref{Int}, Ref{Int}, Ptr{Nothing}, Ptr{$elty},
+                 Ref{Int}, Ptr{$elty}, Ptr{$elty}, Ptr{$elty},
+                 Ref{Int}, Ref{$elty}, Ptr{$elty}, Ref{Int},
+                 Ptr{Int}, Ref{Int}, Ptr{$elty}, Ptr{Int},
+                 Ptr{Int}, Ptr{$elty}, Ptr{Int}),
                 jobu, jobv, m, n,
                 k, kmax, aprod, U,
                 ldu, s, bnd, V,
@@ -107,20 +102,20 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
 
             nb = 16 # BLAS-3 blocking size. Don't know the size. It's almost surely a power of 2.
             if jobu == 'N' && jobv == 'N'
-                lwork = Int32(m + n + 9kmax + 2kmax*kmax + 4 + max(m + n, 4kmax + 4))
-                liwork = Int32(2kmax + 1)
+                lwork = Int(m + n + 9kmax + 2kmax*kmax + 4 + max(m + n, 4kmax + 4))
+                liwork = Int(2kmax + 1)
             else
-                lwork = Int32(m + n + 9kmax + 5kmax*kmax + 4 + max(3kmax*kmax + 4kmax + 4, nb*max(m, n)))
-                liwork = Int32(8kmax)
+                lwork = Int(m + n + 9kmax + 5kmax*kmax + 4 + max(3kmax*kmax + 4kmax + 4, nb*max(m, n)))
+                liwork = Int(8kmax)
             end
             work = Vector{$elty}(undef, lwork)
-            iwork = Vector{Int32}(undef, liwork)
+            iwork = Vector{Int}(undef, liwork)
 
             ϵ = eps($elty)
             doption = $elty[sqrt(ϵ/k); ϵ^(3/4)/sqrt(k); 0.0]  # propack will estimate ‖A‖
-            ioption = Int32[0; 1]
+            ioption = Int[0; 1]
 
-            iparm = Int32[0]
+            iparm = Int[0]
 
             (U, s, V, bnd) = lansvd!(jobu, jobv, m, n, kmax, pff, U, s, bnd, V, tolin,
                 work, iwork, doption, ioption, dparm, iparm)
@@ -175,8 +170,8 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             n::Integer, kmax::Integer, p::Integer,
             maxiter::Integer, aprod, U::Array{$elty,2}, s::Vector{$elty},
             bnd::Vector{$elty}, V::Array{$elty,2}, tolin::$elty,
-            work::Vector{$elty}, iwork::Vector{Int32}, doption::Vector{$elty},
-            ioption::Vector{Int32}, dparm::Ptr{Nothing}, iparm::Vector{Int32})
+            work::Vector{$elty}, iwork::Vector{Int}, doption::Vector{$elty},
+            ioption::Vector{Int}, dparm::Ptr{Nothing}, iparm::Vector{Int})
 
             # extract values
             # in both Fortran and Julia, arrays are column major
@@ -194,15 +189,15 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             kv >= kmax || error("V must have kmax columns (kmax=$kmax)")
 
             # allocate
-            info = Int32[0]
+            info = Int[0]
 
             ccall(($(string(fname)), $lname), Nothing,
-                (Ref{UInt8}, Ref{UInt8}, Ref{UInt8}, Ref{Int32}, Ref{Int32},
-                 Ref{Int32}, Ref{Int32}, Ref{Int32}, Ref{Int32}, Ptr{Nothing}, Ptr{$elty},
-                 Ref{Int32}, Ptr{$elty}, Ptr{$elty}, Ptr{$elty},
-                 Ref{Int32}, Ref{$elty}, Ptr{$elty}, Ref{Int32},
-                 Ptr{Int32}, Ref{Int32}, Ptr{$elty}, Ptr{Int32},
-                 Ptr{Int32}, Ptr{$elty}, Ptr{Int32}),
+                (Ref{UInt8}, Ref{UInt8}, Ref{UInt8}, Ref{Int}, Ref{Int},
+                 Ref{Int}, Ref{Int}, Ref{Int}, Ref{Int}, Ptr{Nothing}, Ptr{$elty},
+                 Ref{Int}, Ptr{$elty}, Ptr{$elty}, Ptr{$elty},
+                 Ref{Int}, Ref{$elty}, Ptr{$elty}, Ref{Int},
+                 Ptr{Int}, Ref{Int}, Ptr{$elty}, Ptr{Int},
+                 Ptr{Int}, Ptr{$elty}, Ptr{Int}),
                 which, jobu, jobv, m, n,
                 kmax, p, k, maxiter, aprod, U,
                 ldu, s, bnd, V,
@@ -246,20 +241,20 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
 
             nb = 16 # BLAS-3 blocking size. Don't know the size. It's almost surely a power of 2.
             if jobu == 'N' && jobv == 'N'
-                lwork = Int32(m + n + 10kmax + 2kmax*kmax + 5 + max(m, max(n, 4kmax + 4)))
-                liwork = Int32(2kmax + 1)
+                lwork = Int(m + n + 10kmax + 2kmax*kmax + 5 + max(m, max(n, 4kmax + 4)))
+                liwork = Int(2kmax + 1)
             else
-                lwork = Int32(m + n + 10kmax + 5kmax*kmax + 4 + max(3kmax*kmax + 4kmax + 4, nb*max(m, n)))
-                liwork = Int32(8kmax)
+                lwork = Int(m + n + 10kmax + 5kmax*kmax + 4 + max(3kmax*kmax + 4kmax + 4, nb*max(m, n)))
+                liwork = Int(8kmax)
             end
             work = Vector{$elty}(undef, lwork)
-            iwork = Vector{Int32}(undef, liwork)
+            iwork = Vector{Int}(undef, liwork)
 
             ϵ = eps($elty)
             doption = $elty[sqrt(ϵ); ϵ^(3/4); 0.0; ϵ^(1/6)]
-            ioption = Int32[0; 1]
+            ioption = Int[0; 1]
 
-            iparm = Int32[0]
+            iparm = Int[0]
 
             (U, s, V, bnd) = lansvd_irl!(which, jobu, jobv, m, n, kmax, p, maxiter,
                 pff, U, s, bnd, V, tolin, work, iwork, doption, ioption, dparm, iparm)

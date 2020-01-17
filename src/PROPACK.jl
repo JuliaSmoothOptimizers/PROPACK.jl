@@ -3,6 +3,7 @@ module PROPACK
 export tsvd, tsvdvals, tsvd_irl, tsvdvals_irl
 
 using LinearOperators
+using PROPACK_jll
 
 include("wrappers.jl")
 
@@ -14,8 +15,8 @@ end
 
 # callback using dparm as passthrough pointer to save the linear operator
 # thanks http://julialang.org/blog/2013/05/callback !
-function __f__(transa_::Ptr{UInt8}, m_::Ptr{Int32}, n_::Ptr{Int32},
-               x_::Ptr{T}, y_::Ptr{T}, dparm_::Ptr{T}, iparm::Ptr{Int32}) where T
+function __f__(transa_::Ptr{UInt8}, m_::Ptr{Int}, n_::Ptr{Int},
+               x_::Ptr{T}, y_::Ptr{T}, dparm_::Ptr{T}, iparm::Ptr{Int}) where T
   m = unsafe_load(m_)
   n = unsafe_load(n_)
   dparm = reinterpret(Ptr{Nothing}, dparm_)
@@ -63,7 +64,7 @@ function tsvd(A::AbstractLinearOperator{T};
               kmax::Integer = min(size(A)...)+10,
               tolin::Real = sqrt(eps(real(one(T))))) where T
 
-    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
+    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
 
     m, n = size(A)
     op = PropackOperator(A, 0, 0)
@@ -91,7 +92,7 @@ function tsvdvals(A::AbstractLinearOperator{T};
                   kmax::Integer = min(size(A)...)+10,
                   tolin::Real = sqrt(eps(real(one(T))))) where T
 
-    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
+    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
 
     m, n = size(A)
     op = PropackOperator(A, 0, 0)
@@ -136,7 +137,7 @@ function tsvd_irl(A::AbstractLinearOperator{T};
                   p::Integer = 1, k::Integer = 1,
                   maxiter::Integer = min(size(A)...), tolin::Real = sqrt(eps(real(one(T))))) where T
 
-    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
+    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
 
     m, n = size(A)
     op = PropackOperator(A, 0, 0)
@@ -165,7 +166,7 @@ function tsvdvals_irl(A::AbstractLinearOperator{T};
                       kmax::Integer = min(size(A)...)+10,
                       p::Integer = 1, k::Integer = 1,
                       maxiter::Integer = min(size(A)...), tolin::Real = sqrt(eps(real(one(T))))) where T
-    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int32}, Ptr{Int32}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int32}))
+    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
 
     m, n = size(A)
     op = PropackOperator(A, 0, 0)
