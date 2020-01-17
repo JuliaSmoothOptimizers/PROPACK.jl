@@ -1,6 +1,0 @@
-p = pwd()
-here = dirname(@__FILE__)
-cd(joinpath(here, "PROPACK"))
-is_freebsd = VERSION < v"1.1" ? (Sys.isbsd() && !Sys.isapple()) : Sys.isfreebsd()
-run(is_freebsd ? `gmake` : `make`)
-cd(p)
