@@ -6,10 +6,8 @@ task:
     matrix:
       - JULIA_VERSION: 1.3
       - JULIA_VERSION: nightly
+  allow_failures: $JULIA_VERSION == 'nightly'
   install_script:
-    - echo "FETCH_RETRY = 6" >> /usr/local/etc/pkg.conf
-    - pkg update
-    - pkg install -y gmake lang/gcc math/blas math/lapack
     - sh -c "$(fetch https://raw.githubusercontent.com/ararslan/CirrusCI.jl/master/bin/install.sh -o -)"
   build_script:
     - cirrusjl build
