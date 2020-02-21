@@ -51,9 +51,7 @@ for (fname, lname, elty, subty) in ((:slansvd_, :libspropack, Float32   , Float3
             ldv, kv = size(V)
             lwork = length(work)
             liwork = length(iwork)
-            if cwork !== nothing
-                lcwork = length(cwork)
-            end
+            lcwork = cwork == nothing ? 0 : length(cwork)
 
             # check
             k <= kmax || error("too many triplets requested")
@@ -212,9 +210,7 @@ for (fname, lname, elty, subty) in ((:slansvd_irl_, :libspropack, Float32,    Fl
             ldv, kv = size(V)
             lwork = length(work)
             liwork = length(iwork)
-            if cwork !== nothing
-                lcwork = length(cwork)
-            end
+            lcwork = cwork == nothing ? 0 : length(cwork)
 
             # check
             k <= kmax || error("too many triplets requested")
