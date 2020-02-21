@@ -1,5 +1,7 @@
-for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
-                             (:dlansvd_, :libdpropack, Float64))
+for (fname, lname, elty, subty) in ((:slansvd_, :libspropack, Float32   , Float32),
+                                    (:dlansvd_, :libdpropack, Float64   , Float64),
+                                    (:clansvd_, :libcpropack, ComplexF32, Float32),
+                                    (:zlansvd_, :libzpropack, ComplexF64, Float64))
     @eval begin
         """lansvd!: Compute leading singular triplets.
 
@@ -22,6 +24,7 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
         - iwork: integer work array of size
             - 2*kmax + 1 if jobu = jobv = 'N'
             - 8*kmax     otherwise
+        - cwork: complex work array
         - doption: [δ, η, ‖A‖], where
             - δ: the level of orthogonality desired,
             - η: vectors with components larger than η will be purged during reorthogonalization
@@ -35,10 +38,11 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
         Returns: (U, s, V, bnd).
         """
         function lansvd!(jobu::Char, jobv::Char, m::Integer, n::Integer,
-            kmax::Integer, aprod, U::Array{$elty,2}, s::Vector{$elty},
-            bnd::Vector{$elty}, V::Array{$elty,2}, tolin::$elty,
-            work::Vector{$elty}, iwork::Vector{Int}, doption::Vector{$elty},
-            ioption::Vector{Int}, dparm::Ptr{Nothing}, iparm::Vector{Int})
+            kmax::Integer, aprod, U::Array{$elty,2}, s::Vector{$subty},
+            bnd::Vector{$subty}, V::Array{$elty,2}, tolin::$subty,
+            work::Vector{$subty}, iwork::Vector{Int}, doption::Vector{$subty},
+            ioption::Vector{Int}, dparm::Ptr{Nothing}, iparm::Vector{Int};
+            cwork :: Union{Nothing, Vector{$elty}}=nothing)
 
             # extract values
             # in both Fortran and Julia, arrays are column major
@@ -47,6 +51,9 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             ldv, kv = size(V)
             lwork = length(work)
             liwork = length(iwork)
+            if cwork !== nothing
+                lcwork = length(cwork)
+            end
 
             # check
             k <= kmax || error("too many triplets requested")
@@ -58,19 +65,35 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             # allocate
             info = Int[0]
 
-            ccall(($(string(fname)), $lname), Nothing,
-                (Ref{UInt8}, Ref{UInt8}, Ref{Int}, Ref{Int},
-                 Ref{Int}, Ref{Int}, Ptr{Nothing}, Ptr{$elty},
-                 Ref{Int}, Ptr{$elty}, Ptr{$elty}, Ptr{$elty},
-                 Ref{Int}, Ref{$elty}, Ptr{$elty}, Ref{Int},
-                 Ptr{Int}, Ref{Int}, Ptr{$elty}, Ptr{Int},
-                 Ptr{Int}, Ptr{$elty}, Ptr{Int}),
-                jobu, jobv, m, n,
-                k, kmax, aprod, U,
-                ldu, s, bnd, V,
-                ldv, tolin, work, lwork,
-                iwork, liwork, doption, ioption,
-                info, dparm, iparm)
+            if $elty <: Real
+                ccall(($(string(fname)), $lname), Nothing,
+                    (Ref{UInt8}, Ref{UInt8}, Ref{Int}, Ref{Int},
+                    Ref{Int}, Ref{Int}, Ptr{Nothing}, Ptr{$elty},
+                    Ref{Int}, Ptr{$elty}, Ptr{$subty}, Ptr{$elty},
+                    Ref{Int}, Ref{$subty}, Ptr{$subty}, Ref{Int},
+                    Ptr{Int}, Ref{Int}, Ptr{$subty}, Ptr{Int},
+                    Ptr{Int}, Ptr{$elty}, Ptr{Int}),
+                    jobu, jobv, m, n,
+                    k, kmax, aprod, U,
+                    ldu, s, bnd, V,
+                    ldv, tolin, work, lwork,
+                    iwork, liwork, doption, ioption,
+                    info, dparm, iparm)
+            elseif $elty <: Complex
+                ccall(($(string(fname)), $lname), Nothing,
+                    (Ref{UInt8}, Ref{UInt8}, Ref{Int}, Ref{Int},
+                    Ref{Int}, Ref{Int}, Ptr{Nothing}, Ptr{$elty},
+                    Ref{Int}, Ptr{$elty}, Ptr{$subty}, Ptr{$elty},
+                    Ref{Int}, Ref{$subty}, Ptr{$subty}, Ref{Int}, Ptr{$elty}, Ref{Int},
+                    Ptr{Int}, Ref{Int}, Ptr{$subty}, Ptr{Int},
+                    Ptr{Int}, Ptr{$elty}, Ptr{Int}),
+                    jobu, jobv, m, n,
+                    k, kmax, aprod, U,
+                    ldu, s, bnd, V,
+                    ldv, tolin, work, lwork, cwork, lcwork,
+                    iwork, liwork, doption, ioption,
+                    info, dparm, iparm)
+            end
 
             info[1] == 0 || error("lansvd return code: $(info[1])")
 
@@ -91,13 +114,13 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
             max(16ϵ s[1], tolin * s[i])
         """
         function lansvd(jobu::Char, jobv::Char, m::Integer, n::Integer, pff::Ptr{Nothing},
-            initvec::Vector{$elty}, k::Integer, kmax::Integer, tolin::$elty, dparm::Ptr{Nothing})
+            initvec::Vector{$elty}, k::Integer, kmax::Integer, tolin::$subty, dparm::Ptr{Nothing})
 
             # Extract
             U = Array{$elty}(undef, m, kmax + 1)
             copyto!(U, 1, initvec, 1, m)
-            s = Vector{$elty}(undef, k)
-            bnd = Vector{$elty}(undef, k)
+            s = Vector{$subty}(undef, k)
+            bnd = Vector{$subty}(undef, k)
             V = Array{$elty}(undef, n, kmax)
 
             nb = 16 # BLAS-3 blocking size. Don't know the size. It's almost surely a power of 2.
@@ -108,25 +131,32 @@ for (fname, lname, elty) in ((:slansvd_, :libspropack, Float32),
                 lwork = Int(m + n + 9kmax + 5kmax*kmax + 4 + max(3kmax*kmax + 4kmax + 4, nb*max(m, n)))
                 liwork = Int(8kmax)
             end
-            work = Vector{$elty}(undef, lwork)
+            work = Vector{$subty}(undef, lwork)
             iwork = Vector{Int}(undef, liwork)
-
-            ϵ = eps($elty)
-            doption = $elty[sqrt(ϵ/k); ϵ^(3/4)/sqrt(k); 0.0]  # propack will estimate ‖A‖
+            if $elty <: Complex
+                lcwork = Int(m + n + 32m)
+                cwork = Vector{$elty}(undef, lcwork)
+            else
+                cwork = nothing
+            end
+            ϵ = eps($subty)
+            doption = $subty[sqrt(ϵ/k); ϵ^(3/4)/sqrt(k); 0.0]  # propack will estimate ‖A‖
             ioption = Int[0; 1]
 
             iparm = Int[0]
 
             (U, s, V, bnd) = lansvd!(jobu, jobv, m, n, kmax, pff, U, s, bnd, V, tolin,
-                work, iwork, doption, ioption, dparm, iparm)
+                work, iwork, doption, ioption, dparm, iparm, cwork=cwork)
             return (U[:,1:k], s, V[:,1:k], bnd)
         end
     end
 end
 
 
-for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
-                             (:dlansvd_irl_, :libdpropack, Float64))
+for (fname, lname, elty, subty) in ((:slansvd_irl_, :libspropack, Float32,    Float32),
+                                    (:dlansvd_irl_, :libdpropack, Float64,    Float64),
+                                    (:clansvd_irl_, :libcpropack, ComplexF32, Float32),
+                                    (:zlansvd_irl_, :libzpropack, ComplexF64, Float64))
     @eval begin
 
         """lansvd_irl!: Compute leading singular triplets.
@@ -153,6 +183,7 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
         - iwork: integer work array of size
             - 2*kmax + 1 if jobu = jobv = 'N'
             - 8*kmax     otherwise
+        - cwork: complex work array
         - doption: [δ, η, ‖A‖, gap], where
             - δ: the level of orthogonality desired,
             - η: vectors with components larger than η will be purged during reorthogonalization
@@ -168,10 +199,11 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
         """
         function lansvd_irl!(which::Char, jobu::Char, jobv::Char, m::Integer,
             n::Integer, kmax::Integer, p::Integer,
-            maxiter::Integer, aprod, U::Array{$elty,2}, s::Vector{$elty},
-            bnd::Vector{$elty}, V::Array{$elty,2}, tolin::$elty,
-            work::Vector{$elty}, iwork::Vector{Int}, doption::Vector{$elty},
-            ioption::Vector{Int}, dparm::Ptr{Nothing}, iparm::Vector{Int})
+            maxiter::Integer, aprod, U::Array{$elty,2}, s::Vector{$subty},
+            bnd::Vector{$subty}, V::Array{$elty,2}, tolin::$subty,
+            work::Vector{$subty}, iwork::Vector{Int}, doption::Vector{$subty},
+            ioption::Vector{Int}, dparm::Ptr{Nothing}, iparm::Vector{Int};
+            cwork :: Union{Nothing, Vector{$elty}}=nothing)
 
             # extract values
             # in both Fortran and Julia, arrays are column major
@@ -180,6 +212,9 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             ldv, kv = size(V)
             lwork = length(work)
             liwork = length(iwork)
+            if cwork !== nothing
+                lcwork = length(cwork)
+            end
 
             # check
             k <= kmax || error("too many triplets requested")
@@ -191,19 +226,35 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
             # allocate
             info = Int[0]
 
-            ccall(($(string(fname)), $lname), Nothing,
-                (Ref{UInt8}, Ref{UInt8}, Ref{UInt8}, Ref{Int}, Ref{Int},
-                 Ref{Int}, Ref{Int}, Ref{Int}, Ref{Int}, Ptr{Nothing}, Ptr{$elty},
-                 Ref{Int}, Ptr{$elty}, Ptr{$elty}, Ptr{$elty},
-                 Ref{Int}, Ref{$elty}, Ptr{$elty}, Ref{Int},
-                 Ptr{Int}, Ref{Int}, Ptr{$elty}, Ptr{Int},
-                 Ptr{Int}, Ptr{$elty}, Ptr{Int}),
-                which, jobu, jobv, m, n,
-                kmax, p, k, maxiter, aprod, U,
-                ldu, s, bnd, V,
-                ldv, tolin, work, lwork,
-                iwork, liwork, doption, ioption,
-                info, dparm, iparm)
+            if $elty <: Real
+                ccall(($(string(fname)), $lname), Nothing,
+                    (Ref{UInt8}, Ref{UInt8}, Ref{UInt8}, Ref{Int}, Ref{Int},
+                    Ref{Int}, Ref{Int}, Ref{Int}, Ref{Int}, Ptr{Nothing}, Ptr{$elty},
+                    Ref{Int}, Ptr{$elty}, Ptr{$subty}, Ptr{$elty},
+                    Ref{Int}, Ref{$subty}, Ptr{$subty}, Ref{Int},
+                    Ptr{Int}, Ref{Int}, Ptr{$subty}, Ptr{Int},
+                    Ptr{Int}, Ptr{$elty}, Ptr{Int}),
+                    which, jobu, jobv, m, n,
+                    kmax, p, k, maxiter, aprod, U,
+                    ldu, s, bnd, V,
+                    ldv, tolin, work, lwork,
+                    iwork, liwork, doption, ioption,
+                    info, dparm, iparm)
+            elseif $elty <: Complex
+                ccall(($(string(fname)), $lname), Nothing,
+                    (Ref{UInt8}, Ref{UInt8}, Ref{UInt8}, Ref{Int}, Ref{Int},
+                    Ref{Int}, Ref{Int}, Ref{Int}, Ref{Int}, Ptr{Nothing}, Ptr{$elty},
+                    Ref{Int}, Ptr{$subty}, Ptr{$subty}, Ptr{$elty},
+                    Ref{Int}, Ref{$subty}, Ptr{$subty}, Ref{Int}, Ptr{$elty}, Ref{Int},
+                    Ptr{Int}, Ref{Int}, Ptr{$subty}, Ptr{Int},
+                    Ptr{Int}, Ptr{$elty}, Ptr{Int}),
+                    which, jobu, jobv, m, n,
+                    kmax, p, k, maxiter, aprod, U,
+                    ldu, s, bnd, V,
+                    ldv, tolin, work, lwork, cwork, lcwork,
+                    iwork, liwork, doption, ioption,
+                    info, dparm, iparm)
+            end
 
             info[1] == 0 || error("lansvd_irl return code: $(info[1])")
 
@@ -230,13 +281,13 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
         """
         function lansvd_irl(which::Char, jobu::Char, jobv::Char, m::Integer,
             n::Integer, kmax::Integer, p::Integer, k::Integer, maxiter::Integer,
-            pff::Ptr{Nothing}, initvec::Vector{$elty}, tolin::$elty, dparm::Ptr{Nothing})
+            pff::Ptr{Nothing}, initvec::Vector{$elty}, tolin::$subty, dparm::Ptr{Nothing})
 
             # Extract
             U = Array{$elty}(undef, m, kmax + 1)
             copyto!(U, 1, initvec, 1, m)
-            s = Vector{$elty}(undef, k)
-            bnd = Vector{$elty}(undef, k)
+            s = Vector{$subty}(undef, k)
+            bnd = Vector{$subty}(undef, k)
             V = Array{$elty}(undef, n, kmax)
 
             nb = 16 # BLAS-3 blocking size. Don't know the size. It's almost surely a power of 2.
@@ -247,17 +298,23 @@ for (fname, lname, elty) in ((:slansvd_irl_, :libspropack, Float32),
                 lwork = Int(m + n + 10kmax + 5kmax*kmax + 4 + max(3kmax*kmax + 4kmax + 4, nb*max(m, n)))
                 liwork = Int(8kmax)
             end
-            work = Vector{$elty}(undef, lwork)
+            work = Vector{$subty}(undef, lwork)
             iwork = Vector{Int}(undef, liwork)
+            if $elty <: Complex
+                lcwork = Int(m + n + 32m)
+                cwork = Vector{$elty}(undef, lcwork)
+            else
+                cwork = nothing
+            end
 
-            ϵ = eps($elty)
-            doption = $elty[sqrt(ϵ); ϵ^(3/4); 0.0; ϵ^(1/6)]
+            ϵ = eps($subty)
+            doption = $subty[sqrt(ϵ); ϵ^(3/4); 0.0; ϵ^(1/6)]
             ioption = Int[0; 1]
 
             iparm = Int[0]
 
             (U, s, V, bnd) = lansvd_irl!(which, jobu, jobv, m, n, kmax, p, maxiter,
-                pff, U, s, bnd, V, tolin, work, iwork, doption, ioption, dparm, iparm)
+                pff, U, s, bnd, V, tolin, work, iwork, doption, ioption, dparm, iparm, cwork=cwork)
             return (U[:,1:k], s, V[:,1:k], bnd)
         end
     end
