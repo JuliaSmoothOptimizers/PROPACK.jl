@@ -1,6 +1,6 @@
 name = "PROPACK"
 uuid = "b169e327-5944-5131-97a6-5d3d3f0a476a"
-version = "0.2.0"
+version = "0.3.0"
 
 [deps]
 BinaryProvider = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
