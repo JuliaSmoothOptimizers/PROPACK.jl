@@ -7,12 +7,6 @@ using PROPACK_jll
 
 include("wrappers.jl")
 
-mutable struct PropackOperator{T}
-  A::AbstractLinearOperator{T}
-  nprod::Int
-  ntprod::Int
-end
-
 # callback using dparm as passthrough pointer to save the linear operator
 # thanks http://julialang.org/blog/2013/05/callback !
 function __f__(transa_::Ptr{UInt8}, m_::Ptr{Int}, n_::Ptr{Int},
@@ -21,16 +15,13 @@ function __f__(transa_::Ptr{UInt8}, m_::Ptr{Int}, n_::Ptr{Int},
   n = unsafe_load(n_)
   dparm = reinterpret(Ptr{Nothing}, dparm_)
   transa = Char(unsafe_load(transa_))
-  op = unsafe_pointer_to_objref(dparm)::PropackOperator
-  A = op.A
+  A = unsafe_pointer_to_objref(dparm)::AbstractLinearOperator
   (nargin, nargout) = transa == 'n' ? (n, m) : (m, n)
   x = unsafe_wrap(Array, x_, nargin)
   if transa == 'n'
     y = A * x
-    op.nprod += 1
   else
     y = A' * x
-    op.ntprod += 1
   end
   unsafe_copyto!(y_, pointer(y), nargout)
   nothing
@@ -67,10 +58,9 @@ function tsvd(A::AbstractLinearOperator{T};
     __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
 
     m, n = size(A)
-    op = PropackOperator(A, 0, 0)
-    dparm = pointer_from_objref(op)
+    dparm = pointer_from_objref(A)
     U, s, V, bnd = lansvd('Y', 'Y', m, n, __pf__, initvec, k, kmax, tolin, dparm)
-    return (U, s, V, bnd, op.nprod, op.ntprod)
+    return (U, s, V, bnd, A.nprod, A.nctprod)
 end
 
 """
@@ -95,10 +85,9 @@ function tsvdvals(A::AbstractLinearOperator{T};
     __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
 
     m, n = size(A)
-    op = PropackOperator(A, 0, 0)
-    dparm = pointer_from_objref(op)
+    dparm = pointer_from_objref(A)
     _, s, _, bnd = lansvd('N', 'N', m, n, __pf__, initvec, k, kmax, tolin, dparm)
-    return (s, bnd, op.nprod, op.ntprod)
+    return (s, bnd, A.nprod, A.nctprod)
 end
 
 """
@@ -140,10 +129,9 @@ function tsvd_irl(A::AbstractLinearOperator{T};
     __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
 
     m, n = size(A)
-    op = PropackOperator(A, 0, 0)
-    dparm = pointer_from_objref(op)
+    dparm = pointer_from_objref(A)
     U, s, V, bnd = lansvd_irl(smallest ? 'S' : 'L', 'Y', 'Y', m, n, kmax, p, k, maxiter, __pf__, initvec, tolin, dparm)
-    return (U, s, V, bnd, op.nprod, op.ntprod)
+    return (U, s, V, bnd, A.nprod, A.nctprod)
 end
 
 """
@@ -169,15 +157,14 @@ function tsvdvals_irl(A::AbstractLinearOperator{T};
     __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
 
     m, n = size(A)
-    op = PropackOperator(A, 0, 0)
-    dparm = pointer_from_objref(op)
+    dparm = pointer_from_objref(A)
     _, s, _, bnd = lansvd_irl(smallest ? 'S' : 'L', 'N', 'N', m, n, kmax, p, k, maxiter, __pf__, initvec, tolin, dparm)
-    return (s, bnd, op.nprod, op.ntprod)
+    return (s, bnd, A.nprod, A.nctprod)
 end
 
 # interface for matrices
 for fname in (:tsvd, :tsvdvals, :tsvd_irl, :tsvdvals_irl)
-  @eval $fname(A::AbstractMatrix{T}; kwargs...) where T = $fname(LinearOperator(A); kwargs...)
+  @eval $fname(A::AbstractMatrix{T}; kwargs...) where T = $fname(PreallocatedLinearOperator(A); kwargs...)
 end
 
 end # module
