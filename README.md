@@ -1,8 +1,8 @@
 # PROPACK
 
-| **Travis, AppVeyor and Cirrus build statuses** | **Coverage** |
-|:----------------------------------------------:|:------------:|
-| [![Build Status](https://travis-ci.org/JuliaSmoothOptimizers/PROPACK.jl.svg?branch=master)](https://travis-ci.org/JuliaSmoothOptimizers/PROPACK.jl) [![Build status](https://ci.appveyor.com/api/projects/status/s065u6mwkbyuldmw?svg=true)](https://ci.appveyor.com/project/dpo/propack-jl) [![Build Status](https://api.cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl.svg)](https://cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl) | [![Coverage Status](https://coveralls.io/repos/github/JuliaSmoothOptimizers/PROPACK.jl/badge.svg?branch=master)](https://coveralls.io/github/JuliaSmoothOptimizers/PROPACK.jl?branch=master) |
+| **Linux/macOS/Windows/FreeBSD** | **Coverage** |
+|:-------------------------------:|:------------:|
+| ![CI](https://github.com/JuliaSmoothOptimizers/PROPACK.jl/workflows/CI/badge.svg?branch=master)](https://github.com/JuliaSmoothOptimizers/PROPACK.jl/actions) [![Build Status](https://api.cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl.svg)](https://cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl) | [![codecov](https://codecov.io/gh/JuliaSmoothOptimizers/PROPACK.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PROPACK.jl) |
 
 A Julia interface to [PROPACK](http://sun.stanford.edu/~rmunk/PROPACK), a library for the computation of the truncated singular value decomposition of real (Float32, Float64) and complex (ComplexF32, ComplexF64) matrices or linear operators.
 PROPACK only requires operator-vector products to estimate singular values and singular vectors.
