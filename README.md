@@ -2,7 +2,7 @@
 
 | **Linux/macOS/Windows/FreeBSD** | **Coverage** |
 |:-------------------------------:|:------------:|
-| ![CI](https://github.com/JuliaSmoothOptimizers/PROPACK.jl/workflows/CI/badge.svg?branch=master)](https://github.com/JuliaSmoothOptimizers/PROPACK.jl/actions) [![Build Status](https://api.cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl.svg)](https://cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl) | [![codecov](https://codecov.io/gh/JuliaSmoothOptimizers/PROPACK.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PROPACK.jl) |
+| [![CI](https://github.com/JuliaSmoothOptimizers/PROPACK.jl/workflows/CI/badge.svg?branch=master)](https://github.com/JuliaSmoothOptimizers/PROPACK.jl/actions) [![Build Status](https://api.cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl.svg)](https://cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl) | [![codecov](https://codecov.io/gh/JuliaSmoothOptimizers/PROPACK.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PROPACK.jl) |
 
 A Julia interface to [PROPACK](http://sun.stanford.edu/~rmunk/PROPACK), a library for the computation of the truncated singular value decomposition of real (Float32, Float64) and complex (ComplexF32, ComplexF64) matrices or linear operators.
 PROPACK only requires operator-vector products to estimate singular values and singular vectors.
