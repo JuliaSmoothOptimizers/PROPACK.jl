@@ -9,8 +9,15 @@ include("wrappers.jl")
 
 # callback using dparm as passthrough pointer to save the linear operator
 # thanks http://julialang.org/blog/2013/05/callback !
-function __f__(transa_::Ptr{UInt8}, m_::Ptr{Int}, n_::Ptr{Int},
-               x_::Ptr{T}, y_::Ptr{T}, dparm_::Ptr{T}, iparm::Ptr{Int}) where T
+function __f__(
+  transa_::Ptr{UInt8},
+  m_::Ptr{Int},
+  n_::Ptr{Int},
+  x_::Ptr{T},
+  y_::Ptr{T},
+  dparm_::Ptr{T},
+  iparm::Ptr{Int},
+) where {T}
   m = unsafe_load(m_)
   n = unsafe_load(n_)
   dparm = reinterpret(Ptr{Nothing}, dparm_)
@@ -50,17 +57,20 @@ Compute a few leading singular triplets of `A` using only products with `A` and 
 The arrays `U`, `s` and `V` are such that `A - U * diagm(s) * V'` should be of the order of the next
 largest singular value.
 """
-function tsvd(A::AbstractLinearOperator{T};
-              initvec::Vector{T} = zeros(T, size(A, 1)), k::Integer = 1,
-              kmax::Integer = min(size(A)...)+10,
-              tolin::Real = sqrt(eps(real(one(T))))) where T
+function tsvd(
+  A::AbstractLinearOperator{T};
+  initvec::Vector{T} = zeros(T, size(A, 1)),
+  k::Integer = 1,
+  kmax::Integer = min(size(A)...) + 10,
+  tolin::Real = sqrt(eps(real(one(T)))),
+) where {T}
+  __pf__ =
+    @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
 
-    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
-
-    m, n = size(A)
-    dparm = pointer_from_objref(A)
-    U, s, V, bnd = lansvd('Y', 'Y', m, n, __pf__, initvec, k, kmax, tolin, dparm)
-    return (U, s, V, bnd, A.nprod, A.nctprod)
+  m, n = size(A)
+  dparm = pointer_from_objref(A)
+  U, s, V, bnd = lansvd('Y', 'Y', m, n, __pf__, initvec, k, kmax, tolin, dparm)
+  return (U, s, V, bnd, A.nprod, A.nctprod)
 end
 
 """
@@ -77,17 +87,20 @@ See the documentation of `tsvd()`.
 - `nprod::Int`: number of products with `A` required
 - `ntprod::Int`: number of products with `A'` required.
 """
-function tsvdvals(A::AbstractLinearOperator{T};
-                  initvec::Vector{T} = zeros(T, size(A, 1)), k::Integer = 1,
-                  kmax::Integer = min(size(A)...)+10,
-                  tolin::Real = sqrt(eps(real(one(T))))) where T
+function tsvdvals(
+  A::AbstractLinearOperator{T};
+  initvec::Vector{T} = zeros(T, size(A, 1)),
+  k::Integer = 1,
+  kmax::Integer = min(size(A)...) + 10,
+  tolin::Real = sqrt(eps(real(one(T)))),
+) where {T}
+  __pf__ =
+    @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
 
-    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
-
-    m, n = size(A)
-    dparm = pointer_from_objref(A)
-    _, s, _, bnd = lansvd('N', 'N', m, n, __pf__, initvec, k, kmax, tolin, dparm)
-    return (s, bnd, A.nprod, A.nctprod)
+  m, n = size(A)
+  dparm = pointer_from_objref(A)
+  _, s, _, bnd = lansvd('N', 'N', m, n, __pf__, initvec, k, kmax, tolin, dparm)
+  return (s, bnd, A.nprod, A.nctprod)
 end
 
 """
@@ -120,18 +133,37 @@ of the order of the next largest singular value.
 If `smallest == True`, `U * diagm(s) * V'` is (an approximation of) the best rank-`k` approximation
 of `A`.
 """
-function tsvd_irl(A::AbstractLinearOperator{T};
-                  smallest::Bool = true, initvec::Vector{T} = zeros(T, size(A, 1)),
-                  kmax::Integer = min(size(A)...)+10,
-                  p::Integer = 1, k::Integer = 1,
-                  maxiter::Integer = min(size(A)...), tolin::Real = sqrt(eps(real(one(T))))) where T
+function tsvd_irl(
+  A::AbstractLinearOperator{T};
+  smallest::Bool = true,
+  initvec::Vector{T} = zeros(T, size(A, 1)),
+  kmax::Integer = min(size(A)...) + 10,
+  p::Integer = 1,
+  k::Integer = 1,
+  maxiter::Integer = min(size(A)...),
+  tolin::Real = sqrt(eps(real(one(T)))),
+) where {T}
+  __pf__ =
+    @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
 
-    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
-
-    m, n = size(A)
-    dparm = pointer_from_objref(A)
-    U, s, V, bnd = lansvd_irl(smallest ? 'S' : 'L', 'Y', 'Y', m, n, kmax, p, k, maxiter, __pf__, initvec, tolin, dparm)
-    return (U, s, V, bnd, A.nprod, A.nctprod)
+  m, n = size(A)
+  dparm = pointer_from_objref(A)
+  U, s, V, bnd = lansvd_irl(
+    smallest ? 'S' : 'L',
+    'Y',
+    'Y',
+    m,
+    n,
+    kmax,
+    p,
+    k,
+    maxiter,
+    __pf__,
+    initvec,
+    tolin,
+    dparm,
+  )
+  return (U, s, V, bnd, A.nprod, A.nctprod)
 end
 
 """
@@ -149,22 +181,43 @@ See the documentation of `tsdv_irl()`.
 - `nprod::Int`: number of products with `A` required
 - `ntprod::Int`: number of products with `A'` required.
 """
-function tsvdvals_irl(A::AbstractLinearOperator{T};
-                      smallest::Bool = true, initvec::Vector{T} = zeros(T, size(A, 1)),
-                      kmax::Integer = min(size(A)...)+10,
-                      p::Integer = 1, k::Integer = 1,
-                      maxiter::Integer = min(size(A)...), tolin::Real = sqrt(eps(real(one(T))))) where T
-    __pf__ = @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
+function tsvdvals_irl(
+  A::AbstractLinearOperator{T};
+  smallest::Bool = true,
+  initvec::Vector{T} = zeros(T, size(A, 1)),
+  kmax::Integer = min(size(A)...) + 10,
+  p::Integer = 1,
+  k::Integer = 1,
+  maxiter::Integer = min(size(A)...),
+  tolin::Real = sqrt(eps(real(one(T)))),
+) where {T}
+  __pf__ =
+    @cfunction(__f__, Nothing, (Ptr{UInt8}, Ptr{Int}, Ptr{Int}, Ptr{T}, Ptr{T}, Ptr{T}, Ptr{Int}))
 
-    m, n = size(A)
-    dparm = pointer_from_objref(A)
-    _, s, _, bnd = lansvd_irl(smallest ? 'S' : 'L', 'N', 'N', m, n, kmax, p, k, maxiter, __pf__, initvec, tolin, dparm)
-    return (s, bnd, A.nprod, A.nctprod)
+  m, n = size(A)
+  dparm = pointer_from_objref(A)
+  _, s, _, bnd = lansvd_irl(
+    smallest ? 'S' : 'L',
+    'N',
+    'N',
+    m,
+    n,
+    kmax,
+    p,
+    k,
+    maxiter,
+    __pf__,
+    initvec,
+    tolin,
+    dparm,
+  )
+  return (s, bnd, A.nprod, A.nctprod)
 end
 
 # interface for matrices
 for fname in (:tsvd, :tsvdvals, :tsvd_irl, :tsvdvals_irl)
-  @eval $fname(A::AbstractMatrix{T}; kwargs...) where T = $fname(PreallocatedLinearOperator(A); kwargs...)
+  @eval $fname(A::AbstractMatrix{T}; kwargs...) where {T} =
+    $fname(PreallocatedLinearOperator(A); kwargs...)
 end
 
 end # module
