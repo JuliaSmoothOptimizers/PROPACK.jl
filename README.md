@@ -1,7 +1,7 @@
 # PROPACK
 
-[![CI](https://github.com/JuliaSmoothOptimizers/PROPACK.jl/workflows/CI/badge.svg?branch=master)](https://github.com/JuliaSmoothOptimizers/PROPACK.jl/actions) [![Build Status](https://api.cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl.svg)](https://cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl)
-[![codecov](https://codecov.io/gh/JuliaSmoothOptimizers/PROPACK.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/PROPACK.jl)
+[![CI](https://github.com/JuliaSmoothOptimizers/PROPACK.jl/workflows/CI/badge.svg?branch=main)](https://github.com/JuliaSmoothOptimizers/PROPACK.jl/actions) [![Build Status](https://api.cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl.svg)](https://cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl)
+[![codecov](https://codecov.io/gh/JuliaSmoothOptimizers/PROPACK.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/PROPACK.jl)
 [![Documentation/stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JuliaSmoothOptimizers.github.io/PROPACK.jl/stable)
 [![Documentation/dev](https://img.shields.io/badge/docs-latest-blue.svg)](https://JuliaSmoothOptimizers.github.io/PROPACK.jl/latest)
 
