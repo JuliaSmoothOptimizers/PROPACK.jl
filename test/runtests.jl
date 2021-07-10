@@ -1,6 +1,9 @@
 using LinearAlgebra
 using PROPACK
 using Test
+using Random
+
+Random.seed!(1234)
 
 for T ∈ (Float32, Float64, ComplexF32, ComplexF64)
   println("--- Test functions with ", T, " types ---")
