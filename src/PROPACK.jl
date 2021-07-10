@@ -213,8 +213,7 @@ end
 
 # interface for matrices
 for fname in (:tsvd, :tsvdvals, :tsvd_irl, :tsvdvals_irl)
-  @eval $fname(A::AbstractMatrix{T}; kwargs...) where {T} =
-    $fname(LinearOperator(A); kwargs...)
+  @eval $fname(A::AbstractMatrix{T}; kwargs...) where {T} = $fname(LinearOperator(A); kwargs...)
 end
 
 end # module
