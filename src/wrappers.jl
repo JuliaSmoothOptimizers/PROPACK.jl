@@ -46,10 +46,10 @@ for (fname, lname, elty, subty) in (
       n::Integer,
       kmax::Integer,
       aprod,
-      U::Array{$elty, 2},
+      U::Matrix{$elty},
       s::Vector{$subty},
       bnd::Vector{$subty},
-      V::Array{$elty, 2},
+      V::Matrix{$elty},
       tolin::$subty,
       work::Vector{$subty},
       iwork::Vector{Int},
@@ -223,11 +223,11 @@ for (fname, lname, elty, subty) in (
     )
 
       # Extract
-      U = Array{$elty}(undef, m, kmax + 1)
+      U = Matrix{$elty}(undef, m, kmax + 1)
       copyto!(U, 1, initvec, 1, m)
       s = Vector{$subty}(undef, k)
       bnd = Vector{$subty}(undef, k)
-      V = Array{$elty}(undef, n, kmax)
+      V = Matrix{$elty}(undef, n, kmax)
 
       nb = 16 # BLAS-3 blocking size. Don't know the size. It's almost surely a power of 2.
       if jobu == 'N' && jobv == 'N'
@@ -332,10 +332,10 @@ for (fname, lname, elty, subty) in (
       p::Integer,
       maxiter::Integer,
       aprod,
-      U::Array{$elty, 2},
+      U::Matrix{$elty},
       s::Vector{$subty},
       bnd::Vector{$subty},
-      V::Array{$elty, 2},
+      V::Matrix{$elty},
       tolin::$subty,
       work::Vector{$subty},
       iwork::Vector{Int},
@@ -529,11 +529,11 @@ for (fname, lname, elty, subty) in (
     )
 
       # Extract
-      U = Array{$elty}(undef, m, kmax + 1)
+      U = Matrix{$elty}(undef, m, kmax + 1)
       copyto!(U, 1, initvec, 1, m)
       s = Vector{$subty}(undef, k)
       bnd = Vector{$subty}(undef, k)
-      V = Array{$elty}(undef, n, kmax)
+      V = Matrix{$elty}(undef, n, kmax)
 
       nb = 16 # BLAS-3 blocking size. Don't know the size. It's almost surely a power of 2.
       if jobu == 'N' && jobv == 'N'
