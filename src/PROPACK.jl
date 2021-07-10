@@ -2,6 +2,7 @@ module PROPACK
 
 export tsvd, tsvdvals, tsvd_irl, tsvdvals_irl
 
+using LinearAlgebra
 using LinearOperators
 using PROPACK_jll
 
@@ -25,12 +26,8 @@ function __f__(
   A = unsafe_pointer_to_objref(dparm)::AbstractLinearOperator
   (nargin, nargout) = transa == 'n' ? (n, m) : (m, n)
   x = unsafe_wrap(Array, x_, nargin)
-  if transa == 'n'
-    y = A * x
-  else
-    y = A' * x
-  end
-  unsafe_copyto!(y_, pointer(y), nargout)
+  y = unsafe_wrap(Array, y_, nargout)
+  transa == 'n' ? mul!(y, A, x) : mul!(y, A', x)
   nothing
 end
 
@@ -47,10 +44,10 @@ Compute a few leading singular triplets of `A` using only products with `A` and 
   (default: √ϵ).
 
 #### Return values
-- `U::Array`: orthogonal matrix of left singular vectors
+- `U::Matrix`: orthogonal matrix of left singular vectors
 - `s::Vector`: approximate leading singular values
-- `V::Array`: orthogonal matrix of right singular vectors
-- `bnd::Array`: bound on the accuracy of each singular value
+- `V::Matrix`: orthogonal matrix of right singular vectors
+- `bnd::Vector`: bound on the accuracy of each singular value
 - `nprod::Int`: number of products with `A` required
 - `ntprod::Int`: number of products with `A'` required.
 
@@ -83,7 +80,7 @@ See the documentation of `tsvd()`.
 
 #### Return values
 - `s::Vector`: approximate leading singular values
-- `bnd::Array`: bound on the accuracy of each singular value
+- `bnd::Vector`: bound on the accuracy of each singular value
 - `nprod::Int`: number of products with `A` required
 - `ntprod::Int`: number of products with `A'` required.
 """
@@ -120,10 +117,10 @@ implicitly restarted Lanczos bidiagonalization method.
   (default: √ϵ).
 
 #### Return values
-- `U::Array`: orthogonal matrix of left singular vectors
+- `U::Matrix`: orthogonal matrix of left singular vectors
 - `s::Vector`: approximate leading singular values
-- `V::Array`: orthogonal matrix of right singular vectors
-- `bnd::Array`: bound on the accuracy of each singular value
+- `V::Matrix`: orthogonal matrix of right singular vectors
+- `bnd::Vector`: bound on the accuracy of each singular value
 - `nprod::Int`: number of products with `A` required
 - `ntprod::Int`: number of products with `A'` required.
 
@@ -177,7 +174,7 @@ See the documentation of `tsdv_irl()`.
 
 #### Return values
 - `s::Vector`: approximate leading singular values
-- `bnd::Array`: bound on the accuracy of each singular value
+- `bnd::Vector`: bound on the accuracy of each singular value
 - `nprod::Int`: number of products with `A` required
 - `ntprod::Int`: number of products with `A'` required.
 """
@@ -217,7 +214,7 @@ end
 # interface for matrices
 for fname in (:tsvd, :tsvdvals, :tsvd_irl, :tsvdvals_irl)
   @eval $fname(A::AbstractMatrix{T}; kwargs...) where {T} =
-    $fname(PreallocatedLinearOperator(A); kwargs...)
+    $fname(LinearOperator(A); kwargs...)
 end
 
 end # module
