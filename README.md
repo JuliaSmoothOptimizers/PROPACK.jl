@@ -1,9 +1,21 @@
 # PROPACK
 
-[![CI](https://github.com/JuliaSmoothOptimizers/PROPACK.jl/workflows/CI/badge.svg?branch=main)](https://github.com/JuliaSmoothOptimizers/PROPACK.jl/actions) [![Build Status](https://api.cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl.svg)](https://cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl)
-[![codecov](https://codecov.io/gh/JuliaSmoothOptimizers/PROPACK.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/PROPACK.jl)
-[![Documentation/stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://JuliaSmoothOptimizers.github.io/PROPACK.jl/stable)
-[![Documentation/dev](https://img.shields.io/badge/docs-latest-blue.svg)](https://JuliaSmoothOptimizers.github.io/PROPACK.jl/latest)
+| **Documentation** | **Linux/macOS/Windows/FreeBSD** | **Coverage** | **DOI** |
+|:-----------------:|:-------------------------------:|:------------:|:-------:|
+| [![docs-stable][docs-stable-img]][docs-stable-url] [![docs-dev][docs-dev-img]][docs-dev-url] | [![build-gh][build-gh-img]][build-gh-url] [![build-cirrus][build-cirrus-img]][build-cirrus-url] | [![codecov][codecov-img]][codecov-url] | [![doi][doi-img]][doi-url] |
+
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-stable-url]: https://JuliaSmoothOptimizers.github.io/PROPACK.jl/stable
+[docs-dev-img]: https://img.shields.io/badge/docs-dev-purple.svg
+[docs-dev-url]: https://JuliaSmoothOptimizers.github.io/PROPACK.jl/dev
+[build-gh-img]: https://github.com/JuliaSmoothOptimizers/PROPACK.jl/workflows/CI/badge.svg?branch=main
+[build-gh-url]: https://github.com/JuliaSmoothOptimizers/PROPACK.jl/actions
+[build-cirrus-img]: https://img.shields.io/cirrus/github/JuliaSmoothOptimizers/PROPACK.jl?logo=Cirrus%20CI
+[build-cirrus-url]: https://cirrus-ci.com/github/JuliaSmoothOptimizers/PROPACK.jl
+[codecov-img]: https://codecov.io/gh/JuliaSmoothOptimizers/PROPACK.jl/branch/main/graph/badge.svg
+[codecov-url]: https://app.codecov.io/gh/JuliaSmoothOptimizers/PROPACK.jl
+[doi-img]: https://img.shields.io/badge/DOI-10.5281%2Fzenodo.3572724-blue.svg
+[doi-url]: https://doi.org/10.5281/zenodo.3572724
 
 A Julia interface to [PROPACK](http://sun.stanford.edu/~rmunk/PROPACK), a library for the computation of the truncated singular value decomposition of real (Float32, Float64) and complex (ComplexF32, ComplexF64) matrices or linear operators.
 PROPACK only requires operator-vector products to estimate singular values and singular vectors.
