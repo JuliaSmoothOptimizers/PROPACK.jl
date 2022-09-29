@@ -60,7 +60,7 @@ U, s, V, bnd, nprod, ntprod = tsvd_irl(A, k=2)
 s, bnd, nprod, ntprod = tsvdvals_irl(A, k=2)
 ```
 
-# Bug reports and discussions
+## Bug reports and discussions
 
 If you think you found a bug, feel free to open an [issue](https://github.com/JuliaSmoothOptimizers/PROPACK.jl/issues).
 Focused suggestions and requests can also be opened as issues. Before opening a pull request, start an issue or a discussion on the topic, please.
