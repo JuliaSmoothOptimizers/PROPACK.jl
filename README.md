@@ -20,7 +20,7 @@
 A Julia interface to [PROPACK](http://sun.stanford.edu/~rmunk/PROPACK), a library for the computation of the truncated singular value decomposition of real (Float32, Float64) and complex (ComplexF32, ComplexF64) matrices or linear operators.
 PROPACK only requires operator-vector products to estimate singular values and singular vectors.
 
-## References
+## Reference
 
 > Larsen Rasmus M. (1998).
 > Lanczos bidiagonalization with partial reorthogonalization.
