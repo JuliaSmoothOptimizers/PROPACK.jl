@@ -9,7 +9,7 @@ PROPACK_jll = "2c99449f-f194-5e92-8ff0-13814ff41dcf"
 
 [compat]
 LinearOperators = "2.0"
-PROPACK_jll = "0.2.1"
+PROPACK_jll = "= 0.2.1"
 julia = "1.8"
 
 [extras]
