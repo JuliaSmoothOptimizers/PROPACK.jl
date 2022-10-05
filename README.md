@@ -38,6 +38,8 @@ pkg> add PROPACK
 pkg> test PROPACK
 ```
 
+The version 0.5.0 of PROPACK.jl requires at least Julia 1.8.
+
 ## Examples
 
 ### Compute leading singular triplets
