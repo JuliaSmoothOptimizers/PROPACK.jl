@@ -9,8 +9,8 @@ PROPACK_jll = "2c99449f-f194-5e92-8ff0-13814ff41dcf"
 
 [compat]
 LinearOperators = "2.0"
-PROPACK_jll = "= 0.2.1"
-julia = "1.8"
+PROPACK_jll = "=0.1.0, =0.2.3"
+julia = "1.6"
 
 [extras]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
