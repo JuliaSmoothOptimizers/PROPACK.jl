@@ -1,7 +1,5 @@
 *.jl.cov
 *.jl.mem
-deps/PROPACK/complex16/libzpropack.*
-deps/PROPACK/complex8/libcpropack.*
-deps/PROPACK/double/libdpropack.*
-deps/PROPACK/single/libspropack.*
-deps/build.log
+docs/Manifest.toml
+Manifest/toml
+docs/build
